@@ -111,9 +111,12 @@
             rotulo(t[1], px(t[0]), box.y1 + 16,
                    "rgba(255,255,255," + (.6 * a).toFixed(2) + ")", t[2]);
           });
-        rotulo("energía bajo contrato", px(2), py(33125) - 14,
+        // los rotulos vienen del contenido, que existe en dos idiomas
+        rotulo(cv.dataset.serieTotal || "energía bajo contrato",
+               px(2), py(33125) - 14,
                "rgba(" + C_TOT + "," + a.toFixed(2) + ")", "left", 700);
-        rotulo("sobre 130 USD/MWh", px(2), py(11304) - 14,
+        rotulo(cv.dataset.serieAlto || "sobre 130 USD/MWh",
+               px(2), py(11304) - 14,
                "rgba(" + C_ALTO + "," + a.toFixed(2) + ")", "left", 700);
       }
     }
