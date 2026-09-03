@@ -111,7 +111,11 @@ body:has(.shell[data-rail="off"]) .hamb svg{transform:rotate(180deg)}
 .logos img{height:24px;width:auto;opacity:.9;
   transition:opacity .25s var(--ease)}
 .logos img.gal{height:20px}
-.logos:hover img{opacity:1}
+.logos a{display:flex;align-items:center}
+/* el realce va por enlace y no por el contenedor: con .logos:hover se
+   encendían los dos y no se veía cuál se iba a abrir */
+.logos a:hover img{opacity:1}
+.logos a:focus-visible{outline:2px solid var(--gold);outline-offset:4px;border-radius:4px}
 .logos .sep{width:1px;height:26px;background:var(--ln-2)}
 @media(max-width:560px){ .logos img{height:19px} .logos img.gal{height:17px} }
 
@@ -4451,10 +4455,16 @@ $('q135Hint').textContent = Q135.length
   ? `Contrato ${Q135[0].lic}: usa ${fmt(Q135[0].q135,0)} en vez de ${fmt(Q135[0].pIdx,0)} USD/MWh.`
   : 'No hay contratos marcados.';
 
+/* Los logos llevan a sus sitios. Abren en pestaña nueva a propósito: el
+ * simulador guarda todo su estado en la página —fecha de corte, criterio,
+ * extensión, escenario, grupos marcados— y navegar en la misma pestaña lo
+ * borraría sin aviso. */
 $('logos').innerHTML =
-    `<img src="${LOGOS.specBlanco.uri}" alt="SPEC">`
+    `<a href="https://www.spec.cl" target="_blank" rel="noopener">`
+  +   `<img src="${LOGOS.specBlanco.uri}" alt="SPEC"></a>`
   + `<span class="sep"></span>`
-  + `<img class="gal" src="${LOGOS.galileiBlanco.uri}" alt="Galilei">`;
+  + `<a href="https://galilei.energy" target="_blank" rel="noopener">`
+  +   `<img class="gal" src="${LOGOS.galileiBlanco.uri}" alt="Galilei"></a>`;
 
 /* rail plegable, con memoria entre sesiones cuando el navegador la permite */
 const shell=$('shell'), hamb=$('hamb'), velo=$('velo');
