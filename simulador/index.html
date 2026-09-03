@@ -516,7 +516,7 @@ tr.fuera td{opacity:.4}
   <fieldset>
     <legend>Aceptación del suministrador</legend>
     <label class="check">
-      <input type="checkbox" id="aceptacion" checked>
+      <input type="checkbox" id="aceptacion">
       <span>Sólo negocian los que ganan<em>Compara en valor presente lo que pierde por la rebaja
       contra lo que gana por los años de extensión.</em></span>
     </label>
@@ -4506,7 +4506,7 @@ $('escLin').addEventListener('click',()=>{ VISTA.log=false; render(); });
 $('escLog').addEventListener('click',()=>{ VISTA.log=true;  render(); });
 
 const DEF={fcorte:'2027-01',modo:'precio',pcorte:130,cobertura:40,ranking:'impacto',
-           grupoPor:'lic',crit:'descActual',param:20,idxNeg:'orig',extension:5,aceptacion:true,
+           grupoPor:'lic',crit:'descActual',param:20,idxNeg:'orig',extension:5,aceptacion:false,
            tasa:8,pMercado:55,esc:'eia',cpiLP:2.3,q135:false,part:70,consumo:200,
            gcpi:2.3,ggnl:3.0,gcar:1.5,gdie:2.0,gbre:2.0};
 const inputs=['fcorte','modo','pcorte','cobertura','ranking','grupoPor','crit','param','idxNeg',
