@@ -144,10 +144,24 @@ aside{
   transition:opacity .3s var(--ease)}
 .shell[data-rail="off"] .rail-in{opacity:0}
 
-fieldset{border:0;margin:0 0 6px;padding:18px 0 0;border-top:1px solid var(--ln)}
-fieldset:first-of-type{border-top:0;padding-top:2px}
+/* La separación entre secciones va en el margen y no en el padding: el legend
+   se pinta sobre el borde del fieldset pero igual ocupa lugar en el flujo, así
+   que un padding-top se contaba dos veces y dejaba 22 px entre el título y su
+   primer control, contra 2 px en la sección que empieza con una ayuda. */
+fieldset{border:0;margin:20px 0 6px;padding:2px 0 0;border-top:1px solid var(--ln)}
+fieldset:first-of-type{border-top:0;margin-top:0}
+/* Los títulos de sección iban del mismo color que las etiquetas y no se leían
+   como títulos. Llevan la barra dorada que el sitio usa de kicker, para que se
+   vea que el rail son bloques editables y no una lista corrida de controles.
+   El ::before va inline-block y no flex: legend es un elemento especial y
+   display:flex se comporta distinto según el navegador. */
 legend{padding:0;font-size:10.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
-  color:var(--tx-2)}
+  color:var(--gold)}
+legend::before{content:"";display:inline-block;width:14px;height:2px;border-radius:2px;
+  background:var(--gold);vertical-align:middle;margin:-2px 8px 0 0}
+/* el primer control iba con el margen normal de label y quedaba a 31 px del
+   título, contra 2 px en la sección que empieza con una ayuda */
+legend + label{margin-top:5px}
 label{display:block;font-size:12px;color:var(--tx-2);margin:13px 0 5px}
 label b{color:var(--tx);font-weight:700}
 
@@ -218,11 +232,30 @@ section{display:flex;flex-direction:column;min-height:0;gap:8px}
 .panel[hidden]{display:none}
 #p1{grid-template-rows:auto minmax(0,1fr) auto}
 #p2{grid-template-rows:minmax(0,1.45fr) minmax(0,1fr)}
+/* los dos paneles de texto no compiten por alto con gráficos: se desplazan */
+#p3,#p4{grid-template-rows:auto;overflow-y:auto}
+/* .card{display:flex} está definida más abajo y ganaba por orden de aparición;
+   con .card.ajustes no depende de dónde quede la regla en la hoja */
+.card.ajustes{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+  gap:10px 38px;padding:20px 24px;align-content:start}
+.card.ajustes fieldset{border-top:0;padding-top:0;min-width:0}
+.metodo{padding:22px 26px;font-size:13px;line-height:1.65;color:var(--tx-2);max-width:78ch}
+.metodo h3{margin:22px 0 6px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--gold);font-weight:700}
+.metodo h3:first-child{margin-top:0}
+.metodo p{margin:0 0 10px}
+.metodo b{color:var(--tx)}
+.metodo ul{margin:0 0 10px;padding-left:18px}
+.metodo li{margin-bottom:5px}
 .fila3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:clamp(8px,1vw,14px);min-height:0}
 .fila3 > *{min-width:0;min-height:0}
 
 /* encabezado compacto de sección: título y bajada en una línea */
-.enc{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;flex:0 0 auto;overflow:hidden}
+/* min-width:0 es obligatorio: .enc p va con white-space:nowrap, y sin esto su
+   texto completo entra al ancho mínimo de la sección y estira la columna —
+   pasó al alargar el subtítulo y se comió dos KPI y el borde del gráfico */
+.enc{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;flex:0 0 auto;
+  overflow:hidden;min-width:0}
 .enc h2{margin:0}
 .enc p{margin:0;font-size:11.5px;color:var(--tx-2);line-height:1.45;
   flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -264,6 +297,10 @@ h2 + .desc{color:var(--tx-2);font-size:13px;line-height:1.6;margin:0 0 18px;max-
 .kpi .u{font-size:10px;color:var(--tx-2);font-weight:400;margin-left:4px;letter-spacing:0}
 .kpi.hi .v{color:var(--gold)}
 .kpi.hi{border-color:color-mix(in oklab,var(--gold) 26%,var(--ln))}
+/* señala que el mecanismo no cierra: hay contratos cuya extensión tendría que
+   pagarse por sobre su propio precio actual, que es un absurdo */
+.kpi.mal .v{color:var(--red)}
+.kpi.mal{border-color:color-mix(in oklab,var(--red) 34%,var(--ln))}
 
 /* --- tarjetas --- */
 .card{background:var(--app);border:1px solid var(--ln);border-radius:var(--r-s);
@@ -449,13 +486,13 @@ tr.fuera td{opacity:.4}
  <div class="rail-in">
   <fieldset>
     <legend>Alcance de la negociación</legend>
-    <label for="fcorte">Fecha de corte <span class="hint" style="margin:0">— contratos vigentes a esa fecha</span></label>
-    <input type="month" id="fcorte" value="2027-01" min="2027-01" max="2040-12">
+    <div class="hint" style="margin-top:0">La negociación se cierra en <b>enero de 2027</b> y
+    sus efectos empiezan ahí. Entran los contratos vigentes a esa fecha; los que parten
+    después llegan a la cartera a su precio original.</div>
 
     <label for="modo">Mecanismo de selección</label>
     <select id="modo">
       <option value="precio">Umbral de precio</option>
-      <option value="cobertura">Cobertura objetivo de energía</option>
       <option value="grupo">Por bloque (licitación o suministrador)</option>
     </select>
 
@@ -464,16 +501,6 @@ tr.fuera td{opacity:.4}
     <input type="range" id="pcorte" min="40" max="180" step="1" value="130">
     <div class="hint" id="pcorteHint"></div>
 
-    <div id="cobBox" hidden>
-      <label for="cobertura">Cobertura objetivo: <b><span id="cobTxt">40</span>% de la energía vigente</b></label>
-      <input type="range" id="cobertura" min="5" max="100" step="1" value="40">
-      <label for="ranking">Orden de selección</label>
-      <select id="ranking">
-        <option value="impacto">Por impacto (energía × sobreprecio)</option>
-        <option value="precio">Por precio</option>
-      </select>
-      <div class="hint" id="cobHint"></div>
-    </div>
 
     <div id="grupoBox" hidden>
       <label for="grupoPor">Agrupar por</label>
@@ -488,23 +515,19 @@ tr.fuera td{opacity:.4}
 
   <fieldset>
     <legend>Resultado de la negociación</legend>
-    <label for="crit">Criterio</label>
-    <select id="crit">
-      <option value="techo">Precio queda en el umbral (techo)</option>
-      <option value="descCorte">Umbral menos un descuento %</option>
-      <option value="exceso">Reparto del exceso sobre el umbral</option>
-      <option value="descActual" selected>Descuento % sobre el precio actual</option>
-    </select>
-    <label for="param"><span id="paramTxt">Descuento</span>: <b id="paramVal">20%</b></label>
-    <input type="range" id="param" min="0" max="100" step="1" value="20">
-    <div class="hint" id="critHint"></div>
+    <label for="param">Descuento sobre el precio actual: <b id="paramVal">10%</b></label>
+    <input type="range" id="param" min="0" max="100" step="1" value="10">
+    <div class="hint">Cada contrato baja un porcentaje de su propio precio, sin piso en el
+    umbral.</div>
 
     <label for="idxNeg">Indexación del contrato renegociado</label>
     <select id="idxNeg">
       <option value="orig">Mantiene su fórmula original</option>
       <option value="cpi">Pasa a 100% CPI</option>
-      <option value="fija">Queda fija en USD nominales</option>
     </select>
+
+    <div class="hint">La extensión se paga a <b>precio de mercado más una prima</b>,
+    calculada por contrato para devolver la rebaja con intereses.</div>
 
     <label for="extension">Extensión del plazo: <b><span id="extTxt">5</span> años</b></label>
     <input type="range" id="extension" min="0" max="15" step="1" value="5">
@@ -514,15 +537,7 @@ tr.fuera td{opacity:.4}
   </fieldset>
 
   <fieldset>
-    <legend>Aceptación del suministrador</legend>
-    <label class="check">
-      <input type="checkbox" id="aceptacion">
-      <span>Sólo negocian los que ganan<em>Compara en valor presente lo que pierde por la rebaja
-      contra lo que gana por los años de extensión.</em></span>
-    </label>
-    <div class="hint" id="aviso0" hidden style="color:var(--gold)">Con extensión en 0 años no hay
-    nada que ganar, así que <b>ningún contrato acepta</b> y no se negocia nada. Sube la extensión
-    en «Resultado de la negociación».</div>
+    <legend>Devolución al suministrador</legend>
     <label for="tasa">Tasa de descuento real: <b><span id="tasaTxt">8,0</span> %/año</b></label>
     <input type="range" id="tasa" min="0" max="25" step="0.5" value="8">
     <label for="pMercado">Precio de mercado al vencer: <b><span id="pMercadoTxt">55</span> USD/MWh</b></label>
@@ -532,48 +547,8 @@ tr.fuera td{opacity:.4}
     energía que el cliente tendría que comprar si no hubiera extensión.</div>
   </fieldset>
 
-  <fieldset>
-    <legend>Ajuste de precio base</legend>
-    <label class="check">
-      <input type="checkbox" id="q135">
-      <span>Aplicar el art. 135° quinquies<em id="q135Hint"></em></span>
-    </label>
-  </fieldset>
 
-  <fieldset>
-    <legend>Cuenta del cliente final</legend>
-    <label for="part">La energía es <b><span id="partTxt">70</span>%</b> de la cuenta</label>
-    <input type="range" id="part" min="40" max="100" step="1" value="70">
-    <label for="consumo">Consumo del hogar (kWh/mes)</label>
-    <input type="number" id="consumo" value="200" min="10" max="2000" step="10">
-    <div class="hint">La cuenta se deriva del propio supuesto: <b>cuenta = energía ÷
-    participación</b>, más IVA de 19%. El resto (transmisión, VAD, cargos) queda fijo en USD,
-    así que la rebaja porcentual es la participación por la rebaja de la energía.</div>
-  </fieldset>
-
-  <fieldset>
-    <legend>Proyección de indexadores</legend>
-    <label for="esc">Escenario</label>
-    <select id="esc"></select>
-    <div class="hint" id="escHint"></div>
-    <div id="cpiBox">
-      <label for="cpiLP">CPI EE.UU. de largo plazo: <b><span id="cpiLPVal">2,3</span> %/año</b></label>
-      <input type="range" id="cpiLP" min="0" max="5" step="0.1" value="2.3">
-      <div class="hint">Es el parámetro que más pesa: <b>desde 2034 la cartera queda 100% CPI</b>.
-      Los primeros años siguen la trayectoria observada y la proyectada por el CBO.</div>
-    </div>
-    <div id="tasasBox" hidden>
-      <div class="grid2" style="margin-top:11px">
-        <div><label for="gcpi">CPI EE.UU.</label><input type="number" id="gcpi" value="2.3" step="0.1"></div>
-        <div><label for="ggnl">Henry Hub</label><input type="number" id="ggnl" value="3.0" step="0.1"></div>
-        <div><label for="gcar">Carbón</label><input type="number" id="gcar" value="1.5" step="0.1"></div>
-        <div><label for="gdie">Diésel</label><input type="number" id="gdie" value="2.0" step="0.1"></div>
-        <div><label for="gbre">Brent</label><input type="number" id="gbre" value="2.0" step="0.1"></div>
-      </div>
-      <div class="hint">Tasas constantes anuales (%/año) desde jun-2026 = 1,00.</div>
-    </div>
-    <button class="reset" id="reset">Restablecer parámetros</button>
-  </fieldset>
+  <button class="reset" id="reset">Restablecer parámetros</button>
  </div>
 </aside>
 <div class="velo" id="velo" hidden></div>
@@ -582,6 +557,8 @@ tr.fuera td{opacity:.4}
   <nav class="tabs" role="tablist" aria-label="Secciones del análisis">
     <button role="tab" id="tab1" aria-controls="p1" aria-selected="true">Cartera</button>
     <button role="tab" id="tab2" aria-controls="p2" aria-selected="false">Indexadores y sensibilidad</button>
+    <button role="tab" id="tab3" aria-controls="p3" aria-selected="false">Supuestos generales</button>
+    <button role="tab" id="tab4" aria-controls="p4" aria-selected="false">Método</button>
   </nav>
 
   <div class="panel" id="p1" role="tabpanel" aria-labelledby="tab1">
@@ -592,14 +569,16 @@ tr.fuera td{opacity:.4}
     <section>
       <div class="enc">
         <h2>Precio medio ponderado de la cartera</h2>
-        <p>Promedio por energía de los contratos vigentes en cada año, con la indexación proyectada.</p>
+        <p>Promedio por energía de los vigentes, con la indexación proyectada.</p>
       </div>
       <div class="card">
         <div class="leg">
-          <span><i style="border-color:var(--sin)"></i>Sin negociar</span>
+          <span><i style="border-color:var(--sin)"></i>Contrafactual</span>
           <span><i style="border-color:var(--con)"></i>Con negociación</span>
           <span><i style="border-color:var(--umbral);border-top-style:dashed"></i>Precio de corte</span>
           <span><span class="sw" style="background:color-mix(in oklab,var(--steel) 16%,transparent)"></span>Energía vigente</span>
+          <span id="legBase" hidden><i style="border-color:var(--sin);border-top-style:dashed;opacity:.6"></i>Cartera a plazo original</span>
+          <span id="legExt" hidden><span class="sw" style="background:color-mix(in oklab,var(--red) 30%,transparent)"></span>Energía extendida</span>
         </div>
         <div class="chart">
           <svg id="chEvol" role="img"
@@ -688,6 +667,52 @@ tr.fuera td{opacity:.4}
         </div>
       </section>
     </div>
+  </div>
+  <div class="panel" id="p3" role="tabpanel" aria-labelledby="tab3" hidden>
+    <section>
+      <div class="enc">
+        <h2>Supuestos generales</h2>
+        <p>No dependen de la negociación: la cuenta del cliente y la proyección de precios.</p>
+      </div>
+      <div class="card ajustes">
+        <fieldset>
+          <legend>Energía de la cartera</legend>
+          <label for="comerc">Energía efectivamente comercializada:
+            <b><span id="comercTxt">80</span> %</b></label>
+          <input type="range" id="comerc" min="40" max="100" step="1" value="80">
+          <div class="hint">Sobre la energía adjudicada. Es un factor uniforme:
+          escala los GWh y los MUSD, y deja intactos los precios y los porcentajes.</div>
+        </fieldset>
+        <fieldset>
+          <legend>Cuenta del cliente final</legend>
+          <label for="part">La energía es <b><span id="partTxt">70</span>%</b> de la cuenta</label>
+          <input type="range" id="part" min="40" max="100" step="1" value="70">
+          <label for="consumo">Consumo del hogar (kWh/mes)</label>
+          <input type="number" id="consumo" value="200" min="10" max="2000" step="10">
+          <div class="hint">La cuenta se deriva del propio supuesto: <b>cuenta = energía ÷
+          participación</b>, más IVA de 19%. El resto (transmisión, VAD, cargos) queda fijo en USD,
+          así que la rebaja porcentual es la participación por la rebaja de la energía.</div>
+        </fieldset>
+        <fieldset>
+          <legend>Proyección de indexadores</legend>
+          <div class="hint" style="margin-top:0"><b>EIA STEO ago-2026 + AEO 2026.</b>
+          Corto plazo del STEO, tendencia real de largo plazo del AEO, crack del diésel normalizado.</div>
+          <div id="cpiBox">
+            <label for="cpiLP">CPI EE.UU. de largo plazo: <b><span id="cpiLPVal">2,3</span> %/año</b></label>
+            <input type="range" id="cpiLP" min="0" max="5" step="0.1" value="2.3">
+            <div class="hint">Es el parámetro que más pesa: <b>desde 2034 la cartera queda 100% CPI</b>.
+            Los primeros años siguen la trayectoria observada y la proyectada por el CBO.</div>
+          </div>
+        </fieldset>
+      </div>
+    </section>
+  </div>
+
+  <div class="panel" id="p4" role="tabpanel" aria-labelledby="tab4" hidden>
+    <section>
+      <div class="enc"><h2>Qué hace este modelo</h2></div>
+      <div class="card metodo" id="metodo"></div>
+    </section>
   </div>
 </main>
 </div>
@@ -3658,9 +3683,13 @@ function factor(c, y, k, neg) {
 }
 
 /* Fracción del año y en que el contrato está vigente, con un fin dado en meses (0 a 1) */
-function fracHasta(c, y, finM) {
-  const a = Math.max(mes(c.ini), y * 12 + 1), b = Math.min(finM, y * 12 + 12);
+function fracEntre(c, y, desdeM, hastaM) {
+  const a = Math.max(mes(c.ini), desdeM, y * 12 + 1);
+  const b = Math.min(hastaM, y * 12 + 12);
   return Math.max(0, b - a + 1) / 12;
+}
+function fracHasta(c, y, finM) {
+  return fracEntre(c, y, 0, finM);
 }
 
 /* Fracción del año y con el plazo original del contrato */
@@ -3746,11 +3775,13 @@ function aceptacion(c, p0, pN, k) {
   let perdida = 0, ganancia = 0;
   const hasta = Math.ceil(finExt / 12);
   for (let y = Math.max(Y0, anioCorte); y <= hasta; y++) {
-    const fOrig = fracHasta(c, y, finM);
+    // desde el mes del corte, no desde enero del año del corte: así el año en
+    // que se negocia se prorratea igual que en la serie del cliente
+    const fOrig = fracEntre(c, y, k.fc, finM);
     if (fOrig > 0) {
       perdida += c.gwh * fOrig * (p0 - pN) * factor(c, y, k, false) / real(y) * desc(y);
     }
-    const fExtra = fracHasta(c, y, finExt) - fOrig;
+    const fExtra = fracEntre(c, y, k.fc, finExt) - fOrig;
     if (fExtra > 1e-12) {
       ganancia += c.gwh * fExtra * (pN - k.pMercado) * factor(c, y, k, true) / real(y) * desc(y);
     }
@@ -3765,11 +3796,19 @@ function aceptacion(c, p0, pN, k) {
  *       extension, aceptacion, tasa, pMercado}
  */
 function evaluar(datos, k) {
+  // La energía adjudicada es la nominal que el suministrador comercializa, no
+  // la que efectivamente termina vendiendo a clientes regulados. `comerc` es esa
+  // fracción, y se aplica UNA sola vez acá: todo lo que sigue —selección,
+  // agregación anual, test de aceptación— usa la energía efectiva sin saberlo.
+  // Por omisión 1, para que check.py y los tests anclados a la planilla sigan
+  // comparando contra la energía adjudicada, que es lo que la planilla trae.
+  const uso = k.comerc == null ? 1 : k.comerc;
   const rows = datos.map((c, idx) => {
     const dentro = enCartera(c, k);
     const p0  = precioBase(c, k);
     const vig = dentro && mes(c.ini) <= k.fc && mes(c.fin) >= k.fc;
-    return {...c, idx, dentro, p0, vig, cand: false, neg: false, pN: p0,
+    return {...c, idx, gwhAdj: c.gwh, gwh: c.gwh * uso,
+            dentro, p0, vig, cand: false, neg: false, pN: p0,
             finM: mes(c.fin), extendido: 0, vp: null};
   });
 
@@ -3791,10 +3830,44 @@ function evaluar(datos, k) {
     }
   }
 
+  /* Prima que deja indemne al suministrador.
+   * La extensión no se paga al precio negociado —que es un número suelto— sino
+   * al precio de mercado acordado más una prima despejada para que el valor
+   * presente de lo que cobra de más en la extensión iguale exactamente lo que
+   * resignó por la rebaja:  prima = L / V.
+   * Se calcula POR CONTRATO, porque cada uno resigna según el plazo que le
+   * quede: uno con diez años por delante devuelve mucho más que uno con cuatro,
+   * sobre los mismos años de extensión. El equivalente ponderado por volumen
+   * sale solo, y es Σ L / Σ V. */
+  if (k.pagoExt === 'indemne') {
+    const dsc  = y => Math.pow(1 + k.tasa, -(y - Y0));
+    const real = y => k.curva.cpi[Math.min(Math.max(y - Y0, 0), NAOS - 1)];
+    const anioCorte = Math.floor((k.fc - 1) / 12);
+    for (const c of rows) {
+      if (!c.neg) continue;
+      const finM = mes(c.fin);
+      let L = 0, V = 0;
+      for (let y = anioCorte; y <= Math.ceil(c.finM / 12); y++) {
+        const fRem = fracEntre(c, y, k.fc, finM);
+        const fExt = fracEntre(c, y, k.fc, c.finM) - fRem;
+        if (fRem > 0) {
+          L += c.gwh * fRem * (c.p0 * factor(c, y, k, false) - c.pN * factor(c, y, k, true))
+               * dsc(y) / real(y);
+        }
+        if (fExt > 1e-12) V += c.gwh * fExt * dsc(y);
+      }
+      // sin extensión no hay con qué devolver: la prima no existe
+      c.prima = V > 0 ? L / V : null;
+      c.pExt  = c.prima == null ? null : k.pMercado + c.prima;
+      c.inviable = c.pExt != null && c.pExt > c.p0;
+      c.vExt = V;
+    }
+  }
+
   const serie = [];
   for (let y = Y0; y <= Y1; y++) {
     const nCpi = Math.min(Math.max(y - Y0, 0), NAOS - 1);
-    let E = 0, sSin = 0, sCon = 0, eExt = 0;
+    let E = 0, sSin = 0, sCon = 0, eExt = 0, eBase = 0, sBase = 0;
     for (const c of rows) {
       if (!c.dentro) continue;
       const fO = frac(c, y);                        // plazo original
@@ -3802,8 +3875,29 @@ function evaluar(datos, k) {
       const fX = fC - fO;                           // sólo el tramo extendido
       if (fC <= 0 && fO <= 0) continue;
       E += c.gwh * fC;
-      sCon += c.gwh * fC * c.pN * factor(c, y, k, c.neg);
-      sSin += c.gwh * fO * c.p0 * factor(c, y, k, false);
+      // La negociación se cierra en la fecha de corte y sus efectos empiezan ahí: los
+      // meses anteriores siguen al precio y a la indexación originales. Sin esto la
+      // rebaja se aplicaba desde Y0 y aparecía ahorro años antes de que la negociación
+      // existiera —con corte en 2032 llegaba a 302 MUSD en 2026—, mientras aceptacion()
+      // sólo contaba pérdidas desde el corte.
+      const fPre = c.neg ? fracEntre(c, y, 0, Math.min(mes(c.fin), k.fc - 1)) : fC;
+      const fRem = c.neg ? fracEntre(c, y, k.fc, mes(c.fin)) : 0;
+      const fExt = c.neg ? fracEntre(c, y, k.fc, c.finM) - fRem : 0;
+      // el tramo extendido: al precio negociado, o al de mercado más la prima
+      // que deja indemne al suministrador, según el mecanismo de pago
+      const pTramo = (k.pagoExt === 'indemne' && c.pExt != null)
+        ? c.pExt * k.curva.cpi[nCpi]
+        : c.pN * factor(c, y, k, true);
+      sCon += c.gwh * (fPre * c.p0 * factor(c, y, k, false)
+                     + fRem * c.pN * factor(c, y, k, true)
+                     + fExt * pTramo);
+      const base = c.gwh * fO * c.p0 * factor(c, y, k, false);
+      sSin += base;
+      // la cartera a su plazo original, sin la energía de reposición: es lo que
+      // uno espera de un contrafactual «sin negociar», y separarlo deja ver
+      // cuánto del promedio lo pone el supuesto de precio de mercado
+      sBase += base;
+      eBase += c.gwh * fO;
       if (fX > 1e-12) {
         // Sin la extensión esa energía igual hay que comprarla: se valoriza al precio de
         // mercado esperado, indexado a CPI. Sin este término las dos trayectorias tendrían
@@ -3812,8 +3906,9 @@ function evaluar(datos, k) {
         sSin += c.gwh * fX * k.pMercado * k.curva.cpi[nCpi];
       }
     }
-    serie.push({y, E, eExt,
+    serie.push({y, E, eExt, eBase,
                 sin: E ? sSin / E : 0,
+                sinBase: eBase ? sBase / eBase : 0,
                 con: E ? sCon / E : 0,
                 ahorro: (sSin - sCon) / 1000});
   }
@@ -3825,13 +3920,23 @@ function evaluar(datos, k) {
   const negs = rows.filter(r => r.neg);
   const cands = rows.filter(r => r.cand);
   const eN   = negs.reduce((s, r) => s + r.gwh, 0);
+  const eVAdj = vig.reduce((s, r) => s + r.gwhAdj, 0);
+  // equivalente ponderado por el volumen descontado de la extensión: es ΣL/ΣV,
+  // o sea la media de las primas por contrato pesadas por lo que cada una cobra
+  const primaV = negs.reduce((t, c) => t + (c.vExt || 0), 0);
+  const primaL = negs.reduce((t, c) => t + (c.prima == null ? 0 : c.prima * c.vExt), 0);
   const eCand = cands.reduce((s, r) => s + r.gwh, 0);
   // precio del contrato marginal: el umbral que el mecanismo elegido implica de hecho
   const umbralImp = negs.length ? Math.min(...negs.map(r => r.p0)) : null;
 
-  return {rows, serie, eV, pSin, pCon, negs, cands, eN, eCand, umbralImp,
+  return {rows, serie, eV, eVAdj, comerc: uso, pSin, pCon,
+          prima: primaV ? primaL / primaV : null,
+          pExt:  primaV ? k.pMercado + primaL / primaV : null,
+          inviables: negs.filter(c => c.inviable).length, negs, cands, eN, eCand, umbralImp,
           rechazados: cands.length - negs.length,
-          ahorro1: serie[0].ahorro,
+          // el primer año con efecto, que ya no es Y0: antes del corte no hay
+          // negociación y el ahorro de esos años es cero por construcción
+          ahorro1: (serie.find(p => p.y >= Math.floor((k.fc - 1) / 12)) || serie[0]).ahorro,
           ahorroTot: serie.reduce((s, p) => s + p.ahorro, 0)};
 }
 
@@ -3892,7 +3997,7 @@ function tarifa(k, r) {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {Y0, Y1, NAOS, IDX, TARIFA_HASTA, IVA, mes, curvaDeTasas, precioNeg,
-                    factor, frac, fracHasta, precioBase, enCartera, grupoDe, impacto,
+                    factor, frac, fracHasta, fracEntre, precioBase, enCartera, grupoDe, impacto,
                     seleccionar, aceptacion, evaluar, tarifa};
 }
 
@@ -3911,9 +4016,6 @@ const xAnio  = y => y + 0.5;
 
 const ESC = {};
 IDXD.escenarios.forEach(e => ESC[e.id] = e);
-const ESC_TASAS = {id:'tasas', nombre:'Tasas constantes (editable)',
-  resumen:'Tasas anuales fijas por indexador, editables abajo. Es el supuesto provisorio original, sin fuente externa.',
-  fuente:'Sin fuente externa: valores puestos a mano.'};
 
 const NOMBRE_IDX = {cpi:'CPI EE.UU.', gnl:'Henry Hub', car:'Carbón', die:'Diésel', bre:'Brent'};
 const UNIDAD_IDX = {cpi:'índice', gnl:'USD/MMBtu', car:'USD/ton', die:'USD/m³', bre:'USD/bbl'};
@@ -3926,17 +4028,8 @@ const PESOS = (()=>{
   return o;
 })();
 
-const Q135 = DATA.filter(c=>c.q135!=null);
-
-const CRIT = {
-  techo:     {txt:'Sin uso en este criterio', hint:'Todo contrato que negocia queda exactamente en el precio de corte.', dis:true},
-  descCorte: {txt:'Descuento sobre el umbral', hint:'El contrato queda en umbral × (1 − descuento).'},
-  exceso:    {txt:'Porción del exceso que se cede', hint:'0% = no cede nada (precio actual); 100% = queda en el umbral.'},
-  descActual:{txt:'Descuento sobre el precio actual', hint:'Cada contrato baja un porcentaje de su propio precio, sin piso en el umbral.'}
-};
-
 /* estado de la vista que no entra al modelo */
-const FC_MIN = '2027-01';   // la negociación no puede partir antes
+const FC_MIN = '2027-01';   // fecha de la negociación: fija, sin control en la interfaz
 const VISTA = {log:true, ocultos:new Set(), grupos:new Set(), grupoPorPrev:null};
 
 /* Reescala un escenario a otra inflación de largo plazo. Las curvas vienen en USD nominales,
@@ -3954,31 +4047,28 @@ function conCPI(curvas, cpiLP){
 }
 
 function cfg(){
-  const escId = $('esc').value;
+  const escId = 'eia';      // único escenario; el selector se quitó de la interfaz
   const cpiLP = +$('cpiLP').value/100;
-  const curva = escId === 'tasas'
-    ? curvaDeTasas({cpi:+$('gcpi').value/100, gnl:+$('ggnl').value/100, car:+$('gcar').value/100,
-                    die:+$('gdie').value/100, bre:+$('gbre').value/100})
-    : conCPI(ESC[escId].curvas, cpiLP);
+  const curva = conCPI(ESC[escId].curvas, cpiLP);
   return {
-    fc: Math.max(mes(FC_MIN), mes($('fcorte').value || FC_MIN)),
+    fc: mes(FC_MIN),          // fija: ya no hay control que la mueva
     pc: +$('pcorte').value,
-    crit: $('crit').value,
+    crit: 'descActual',       // único criterio; el selector se quitó de la interfaz
     p: +$('param').value/100,
     idxNeg: $('idxNeg').value,
     escId, curva, cpiLP,
     excluirTA: false,   // la planilla corregida no trae términos anticipados; ver CLAUDE.md
-    q135: $('q135').checked,
+    pagoExt: 'indemne',       // único mecanismo; ver regla 7 en CLAUDE.md
+    comerc: +$('comerc').value/100,
     part: +$('part').value/100,
     consumo: +$('consumo').value || 0,
     clpUsd: HIST.tipoCambio.clpUsd,
     modo: $('modo').value,
-    cobertura: +$('cobertura').value/100,
-    ranking: $('ranking').value,
     grupoPor: $('grupoPor').value,
     grupos: [...VISTA.grupos],
     extension: +$('extension').value,
-    aceptacion: $('aceptacion').checked,
+    // no hay nada que aceptar: el VPN del suministrador es cero por construcción
+    aceptacion: false,
     tasa: +$('tasa').value/100,
     pMercado: +$('pMercado').value
   };
@@ -4105,12 +4195,29 @@ function chartEvol(r,k){
   const xl=[]; for(let y=Y0;y<=Y1;y+=paso) xl.push(y);
   const A=ejes(svg,W,H,M,[Y0,Y1],[0,ymax],xl,yl,x=>x,v=>fmt0(v));
 
-  // energía vigente de fondo
+  // Energía de fondo, en dos bandas: la que corre con su plazo original y,
+  // encima, la que sigue vigente sólo por la extensión pactada. Es la misma
+  // serie —E ya incluye el tramo extendido—, así que la base es E − eExt.
   const eMax=Math.max(...r.serie.map(p=>p.E))*1.06;
   const base=A.py(0);
-  const area=r.serie.map(p=>[A.px(p.y), base-(p.E/eMax)*(base-M.t)*0.92]);
-  svg.appendChild(el('path',{d:path(area)+` L ${A.px(Y1).toFixed(1)} ${base.toFixed(1)} L ${A.px(Y0).toFixed(1)} ${base.toFixed(1)} Z`,
+  const yE=v=>base-(v/eMax)*(base-M.t)*0.92;
+  const cierre=` L ${A.px(Y1).toFixed(1)} ${base.toFixed(1)} L ${A.px(Y0).toFixed(1)} ${base.toFixed(1)} Z`;
+  const orig=r.serie.map(p=>[A.px(p.y), yE(p.E-p.eExt)]);
+  const hayExt=r.serie.some(p=>p.eExt>0);
+  if(hayExt){
+    // se dibuja como región ENTRE las dos curvas y no como un área superpuesta:
+    // con rellenos translúcidos, superponer mezcla los dos colores y la banda
+    // de arriba quedaría de un tono que no está en la leyenda
+    const techo=r.serie.map(p=>[A.px(p.y), yE(p.E)]);
+    svg.appendChild(el('path',{
+      d:path(techo)+' '+path(orig.slice().reverse()).replace('M','L')+' Z',
+      fill:'color-mix(in oklab, var(--red) 18%, transparent)',stroke:'none'}));
+  }
+  svg.appendChild(el('path',{d:path(orig)+cierre,
     fill:'color-mix(in oklab, var(--steel) 14%, transparent)',stroke:'none'}));
+  // la leyenda de la banda sólo aparece cuando hay algo que explicar
+  $('legExt').hidden=!hayExt;
+  $('legBase').hidden=!hayExt;
 
   const pSin=r.serie.map(p=>[A.px(p.y),A.py(p.sin)]), pCon=r.serie.map(p=>[A.px(p.y),A.py(p.con)]);
   svg.appendChild(el('path',{d:path(pSin)+' '+path(pCon.slice().reverse()).replace('M','L')+' Z',
@@ -4119,6 +4226,15 @@ function chartEvol(r,k){
     stroke:'var(--umbral)','stroke-width':1.3,'stroke-dasharray':'6 5'}));
   const tu=el('text',{x:A.px(Y1)+6,y:A.py(k.pc)+4,'font-size':FS.eje,fill:'var(--umbral)'});
   tu.textContent=k.pc; svg.appendChild(tu);
+  // La cartera a su plazo original, sin la energía de reposición. Va más fina y
+  // apagada, y sólo cuando difiere: es referencia, no la serie con la que se
+  // compara el ahorro. Se dibuja antes que las dos principales para quedar
+  // por debajo si se cruzan.
+  if(hayExt){
+    const pBase=r.serie.map(p=>[A.px(p.y),A.py(p.sinBase)]);
+    svg.appendChild(el('path',{d:path(pBase),fill:'none',stroke:'var(--sin)',
+      'stroke-width':1.3,'stroke-linejoin':'round',opacity:.55,'stroke-dasharray':'5 4'}));
+  }
   svg.appendChild(el('path',{d:path(pSin),fill:'none',stroke:'var(--sin)','stroke-width':2.1,
     'stroke-linejoin':'round'}));
   svg.appendChild(el('path',{d:path(pCon),fill:'none',stroke:'var(--con)','stroke-width':2.4,
@@ -4147,10 +4263,13 @@ function chartEvol(r,k){
   },d=>{
     const p=d.p;
     return `<h4>${p.y}</h4>`
-      + fila('var(--sin)','Sin negociar',fmt(p.sin,1)+' USD/MWh')
+      + fila('var(--sin)','Contrafactual',fmt(p.sin,1)+' USD/MWh')
+      + (p.eExt>0?fila('color-mix(in oklab,var(--sin) 55%,transparent)',
+                       'a plazo original',fmt(p.sinBase,1)+' USD/MWh'):'')
       + fila('var(--con)','Negociada',fmt(p.con,1)+' USD/MWh')
       + fila('transparent','Ahorro',fmt(p.ahorro,0)+' MUSD')
-      + `<div class="pie">${fmt0(p.E)} GWh/año vigentes</div>`;
+      + `<div class="pie">${fmt0(p.E)} GWh/año vigentes`
+      + (p.eExt>0?` · <b>${fmt0(p.eExt)} por extensión</b>`:'')+`</div>`;
   });
 }
 const fila=(c,n,v)=>`<div class="fila"><i style="background:${c}"></i><em>${n}</em><b>${v}</b></div>`;
@@ -4313,7 +4432,7 @@ function grupos(k){
     if(k.excluirTA && c.ta) return;
     if(!(mes(c.ini) <= k.fc && mes(c.fin) >= k.fc)) return;
     const g = k.grupoPor==='sup' ? c.sup : c.lic;
-    const p0 = (k.q135 && c.q135!=null) ? c.q135 : c.pIdx;
+    const p0 = c.pIdx;
     const o = m.get(g) || {g, n:0, gwh:0, sp:0};
     o.n++; o.gwh += c.gwh; o.sp += c.gwh*p0;
     m.set(g,o);
@@ -4327,30 +4446,19 @@ function grupos(k){
 function render(){
   const k=cfg(), r=evaluar(DATA,k);
   $('pcorteTxt').textContent=k.pc;
-  const c=CRIT[k.crit];
-  $('paramTxt').textContent=c.txt; $('critHint').textContent=c.hint;
-  $('param').disabled=!!c.dis; $('param').style.opacity=c.dis?.35:1;
-  $('paramVal').textContent=c.dis?'—':(k.p*100).toFixed(0)+'%';
+  $('paramVal').textContent=(k.p*100).toFixed(0)+'%';
 
   // --- controles que dependen del mecanismo de selección ---
-  $('cobBox').hidden   = k.modo!=='cobertura';
   $('grupoBox').hidden = k.modo!=='grupo';
-  $('cobTxt').textContent = fmt0(k.cobertura*100);
   $('extTxt').textContent = k.extension;
+  $('comercTxt').textContent = fmt0(k.comerc*100);
   $('tasaTxt').textContent = fmt(k.tasa*100,1);
   $('pMercadoTxt').textContent = k.pMercado;
   $('pcorteLab').textContent = k.modo==='precio' ? 'Precio de corte' : 'Precio objetivo';
-  $('aviso0').hidden = !(k.aceptacion && k.extension===0);
   $('pcorteHint').innerHTML = k.modo==='precio'
     ? 'Negocian los contratos vigentes <b>por sobre</b> el umbral, y quedan en él según el criterio de abajo.'
     : 'Aquí sólo fija <b>dónde queda</b> el precio negociado; quién negocia lo decide el mecanismo.';
 
-  if(k.modo==='cobertura'){
-    $('cobHint').innerHTML = r.negs.length
-      ? `${r.cands.length} contratos · ${fmt0(r.eCand)} GWh · umbral implícito `
-        + `<b>${fmt(r.umbralImp,1)} USD/MWh</b>`
-      : 'Sin contratos seleccionados.';
-  }
   if(k.modo==='grupo'){
     const gs = grupos(k);
     if(VISTA.grupoPorPrev !== k.grupoPor){   // al cambiar el eje, la selección anterior no aplica
@@ -4372,10 +4480,7 @@ function render(){
       : `Ninguno seleccionado: sin bloques marcados no negocia nadie.`;
   }
 
-  const e = k.escId==='tasas' ? ESC_TASAS : ESC[k.escId];
-  $('escHint').textContent=e.resumen;
-  $('tasasBox').hidden = k.escId!=='tasas';
-  $('cpiBox').hidden   = k.escId==='tasas';
+  const e = ESC[k.escId];
   $('cpiLPVal').textContent=fmt(k.cpiLP*100,1);
   $('partTxt').textContent=fmt0(k.part*100);
 
@@ -4386,10 +4491,13 @@ function render(){
     ['Precio con negociación','cartera vigente a jun-2026', fmt(r.pCon,2),'USD/MWh','hi'],
     ['Rebaja del precio','sobre la cartera vigente', fmt(baja,1),'%','hi'],
     ['Energía que negocia','de '+fmt0(r.eV)+' GWh/año vigentes', fmt0(r.eN),'GWh/año',''],
-    ['Contratos negocian', k.aceptacion
-        ? 'de '+r.cands.length+' candidatos · '+r.rechazados+' no aceptan'
-        : 'de '+r.rows.filter(x=>x.vig).length+' vigentes', String(r.negs.length),'',''],
-    ['Ahorro acumulado',Y0+'–'+Y1, fmt0(r.ahorroTot),'MUSD','hi'],
+    ['Contratos negocian','de '+r.rows.filter(x=>x.vig).length+' vigentes',
+     String(r.negs.length),'',''],
+    ...(r.prima==null ? [] : [
+      ['Precio de la extensión','mercado '+fmt0(k.pMercado)+' + prima'
+        + (r.inviables ? ' · '+r.inviables+' sobre su precio original' : ''),
+       fmt(r.pExt,1),'USD/MWh', r.inviables ? 'hi mal' : 'hi'],
+    ]),
     ['Rebaja en la tarifa','promedio '+t.desde+'–'+t.hasta+', con IVA', fmt(t.pct,2),'%','hi tar'],
     ['Ahorro del hogar', fmt0(k.consumo)+' kWh/mes · ≈ '+fmt0(t.ahorroMesClp)+' CLP/mes',
      fmt(t.ahorroMes,2),'USD/mes','hi tar']
@@ -4440,7 +4548,10 @@ function render(){
         style="width:${Math.max(8,gwh/eVig*100)}%"><span style="width:${cuota}%;background:var(--con)"></span></div></td>
     </tr>`;
   }).join('');
-  const eTot=DATA.filter(x=>!(k.excluirTA&&x.ta)).reduce((s_,x)=>s_+x.gwh,0);
+  // en energía efectiva, igual que r.eV: si no, la frase compararía la
+  // energía comercializada contra la adjudicada
+  const eTot=DATA.filter(x=>!(k.excluirTA&&x.ta))
+                 .reduce((s_,x)=>s_+x.gwh,0)*k.comerc;
   $('bandaDesc').textContent = `${vigentes.length} contratos vigentes · ${fmt0(r.eV)} de `
     + `${fmt0(eTot)} GWh/año · precios en USD/MWh de jun-2026 · el ancho de la barra es el peso `
     + `de la banda, lo dorado lo que negocia.`;
@@ -4448,17 +4559,67 @@ function render(){
 }
 
 /* ============================ arranque ============================ */
-$('esc').innerHTML = IDXD.escenarios.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('')
-  + `<option value="tasas">${ESC_TASAS.nombre}</option>`;
-
-$('q135Hint').textContent = Q135.length
-  ? `Contrato ${Q135[0].lic}: usa ${fmt(Q135[0].q135,0)} en vez de ${fmt(Q135[0].pIdx,0)} USD/MWh.`
-  : 'No hay contratos marcados.';
 
 /* Los logos llevan a sus sitios. Abren en pestaña nueva a propósito: el
  * simulador guarda todo su estado en la página —fecha de corte, criterio,
  * extensión, escenario, grupos marcados— y navegar en la misma pestaña lo
  * borraría sin aviso. */
+/* Nota metodológica. Va en JS y no en el HTML para poder interpolar los
+ * parámetros que el modelo fija —horizonte, mes base, fecha de la negociación—
+ * y que no se desincronicen del código si alguno cambia. */
+$('metodo').innerHTML = `
+  <h3>Qué responde</h3>
+  <p>Cómo evoluciona el <b>precio medio de la cartera de suministro regulado</b> si un grupo de
+  contratos renegocia su precio a cambio de extender su plazo, y qué le pasa a la cuenta del
+  cliente final. La cartera son <b>${DATA.length} contratos</b> con su energía, su precio y su
+  fórmula de indexación, proyectados año a año entre ${Y0} y ${Y1}.</p>
+
+  <h3>El precio base</h3>
+  <p>Todo parte del precio de cada contrato <b>indexado a junio de ${Y0}</b>, que es el mes base:
+  los cinco indexadores valen 1,00 ahí. Hacia adelante cada contrato se indexa con su propia
+  mezcla —CPI, Henry Hub, carbón, diésel y Brent— sobre la proyección de la EIA. La energía
+  adjudicada es nominal; el control de <b>energía comercializada</b> la lleva a lo que
+  efectivamente se vende a clientes regulados.</p>
+
+  <h3>Qué se negocia</h3>
+  <p>La negociación se cierra en <b>enero de 2027</b> y sus efectos empiezan ahí: antes de esa
+  fecha cada contrato sigue a su precio original. Entran los contratos vigentes a esa fecha,
+  seleccionados por umbral de precio o marcando bloques. El precio resultante lo fija el
+  criterio elegido, siempre en dólares de junio de ${Y0}.</p>
+
+  <h3>Cómo se paga</h3>
+  <p>La extensión no es un premio: es el vehículo por el que el suministrador <b>queda
+  indemne</b>. Se paga al precio de mercado acordado más una <b>prima despejada por contrato</b>
+  para que el valor presente de lo que cobra de más en la extensión iguale exactamente lo que
+  resignó por la rebaja. Su resultado neto es cero por construcción, así que no hay test de
+  aceptación: no hay nada que aceptar. Cada contrato tiene su propia prima según el plazo que le
+  quede: el indicador de <b>precio de la extensión</b> muestra el equivalente ponderado por
+  volumen, y avisa cuando algún contrato quedaría pagando por sobre su propio precio actual.</p>
+
+  <h3>Contra qué se compara</h3>
+  <p>El <b>contrafactual</b> no es la cartera actual congelada: es <b>el mismo volumen de
+  energía comprado sin el mecanismo</b>. La energía del tramo extendido igual habría que
+  comprarla, así que se valoriza al precio de mercado supuesto. Sin eso las dos trayectorias
+  cubrirían cantidades distintas y el ahorro no sería comparable. La línea segmentada muestra
+  la cartera a su plazo original, sin esa reposición.</p>
+
+  <h3>La cuenta del cliente</h3>
+  <p>No hay una tarifa calculada: la cuenta se deriva del supuesto de participación
+  —<b>cuenta = energía ÷ participación</b>— más IVA. El resto queda fijo en dólares, así que la
+  rebaja porcentual de la cuenta es la participación por la rebaja de la energía. El nivel de la
+  cuenta es indicativo; lo sólido es la rebaja relativa.</p>
+
+  <h3>Qué no hace</h3>
+  <ul>
+    <li>La indexación es <b>anual</b>, no mensual con rezagos y promedios móviles como en los
+    contratos reales. Pesa sobre todo hasta 2033, mientras los combustibles todavía influyen.</li>
+    <li>La <b>energía es constante</b> por contrato: no hay curva de demanda ni retiros efectivos.</li>
+    <li>No hay precio de nudo, transmisión ni VAD.</li>
+    <li>No valoriza el <b>resultado económico del suministrador</b> más allá de este contrato:
+    sobrecontratación, vertimientos y costos sistémicos quedan fuera.</li>
+    <li>La proyección del <b>carbón</b> no tiene fuente de mercado; es el supuesto más débil.</li>
+  </ul>`;
+
 $('logos').innerHTML =
     `<a href="https://www.spec.cl" target="_blank" rel="noopener">`
   +   `<img src="${LOGOS.specBlanco.uri}" alt="SPEC"></a>`
@@ -4486,7 +4647,7 @@ addEventListener('keydown',ev=>{ if(ev.key==='Escape' && anchoChico() && shell.d
 ['tipEvol','tipAhorro','tipIdx'].forEach(id=>document.body.appendChild($(id)));
 
 /* pestañas: los gráficos de un panel oculto miden cero, así que hay que redibujar al mostrarlo */
-const TABS=[['tab1','p1'],['tab2','p2']];
+const TABS=[['tab1','p1'],['tab2','p2'],['tab3','p3'],['tab4','p4']];
 function verTab(id){
   TABS.forEach(([t,pn])=>{
     const on = t===id;
@@ -4505,13 +4666,11 @@ TABS.forEach(([t])=>$(t).addEventListener('click',()=>verTab(t)));
 $('escLin').addEventListener('click',()=>{ VISTA.log=false; render(); });
 $('escLog').addEventListener('click',()=>{ VISTA.log=true;  render(); });
 
-const DEF={fcorte:'2027-01',modo:'precio',pcorte:130,cobertura:40,ranking:'impacto',
-           grupoPor:'lic',crit:'descActual',param:20,idxNeg:'orig',extension:5,aceptacion:false,
-           tasa:8,pMercado:55,esc:'eia',cpiLP:2.3,q135:false,part:70,consumo:200,
-           gcpi:2.3,ggnl:3.0,gcar:1.5,gdie:2.0,gbre:2.0};
-const inputs=['fcorte','modo','pcorte','cobertura','ranking','grupoPor','crit','param','idxNeg',
-              'extension','aceptacion','tasa','pMercado','esc','cpiLP','q135',
-              'part','consumo','gcpi','ggnl','gcar','gdie','gbre'];
+const DEF={comerc:80,modo:'precio',pcorte:130,
+           grupoPor:'lic',param:10,idxNeg:'orig',extension:5,
+           tasa:8,pMercado:55,cpiLP:2.3,part:70,consumo:200};
+const inputs=['comerc','modo','pcorte','grupoPor','param','idxNeg',
+              'extension','tasa','pMercado','cpiLP','part','consumo'];
 inputs.forEach(id=>$(id).addEventListener($(id).type==='checkbox'?'change':'input',render));
 $('reset').addEventListener('click',()=>{
   for(const id in DEF){ const n=$(id); if(n.type==='checkbox') n.checked=DEF[id]; else n.value=DEF[id]; }
