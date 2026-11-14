@@ -283,6 +283,82 @@ select{
 .listo .tic svg{width:25px;height:25px;stroke:var(--green);stroke-width:2.4;fill:none;
   stroke-linecap:round;stroke-linejoin:round}
 
+
+/* ====================== intro: qué es esto, en tres tiempos ======================
+   Seis segundos antes de la primera pantalla. La mayoría de quien llega a un evento no sabe
+   qué significa «renegociar contratos regulados» en concreto, y tres escenas lo dicen mejor
+   que un párrafo que nadie lee de pie.
+
+   Todo es SVG y CSS: sin librerías, como el resto del proyecto. Las barras son los contratos
+   de verdad —precio indexado a jun-2026, altura proporcional— y no una decoración. */
+.intro{position:fixed;inset:0;z-index:130;display:grid;place-items:center;
+  background:var(--ink-2);padding:22px}
+.intro[hidden]{display:none}
+.intro::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(62% 44% at 80% 10%,color-mix(in oklab,var(--teal) 46%,transparent),
+             transparent 68%),
+             radial-gradient(52% 38% at 6% 94%,color-mix(in oklab,var(--gold) 12%,transparent),
+             transparent 70%)}
+.intro-in{position:relative;width:100%;max-width:520px;display:flex;flex-direction:column;
+  gap:26px}
+
+.intro svg{width:100%;height:auto;display:block;overflow:visible}
+
+/* Cada barra es un contrato: el LARGO son los años que le quedan y el COLOR es su precio.
+   Con dos codificaciones distintas, la rebaja se ve como un cambio de color y la extensión
+   como la barra creciendo — dos movimientos que no se confunden entre sí. Con barras
+   verticales de precio, «dura más años» no se veía por ninguna parte. */
+.intro .barra{width:var(--w1);animation:barraEntra .55s var(--ease) both;
+  animation-delay:calc(var(--i) * .055s)}
+.intro .barra.caro{
+  animation:barraEntra .55s var(--ease) both,
+            rebaja .75s var(--ease) forwards,
+            alarga .85s var(--ease) forwards;
+  animation-delay:calc(var(--i) * .055s), 2.7s, 4.6s}
+.intro .hoy{stroke:var(--ln-2);stroke-width:1}
+.intro .tope{stroke:var(--gold);stroke-width:1.3;stroke-dasharray:4 4;opacity:0;
+  animation:asoma .6s var(--ease) 4.6s both}
+.intro .marca{fill:var(--tx-2);font-size:11px;opacity:0;
+  animation:asoma .6s var(--ease) both}
+
+@keyframes barraEntra{from{width:0;opacity:0}to{width:var(--w1);opacity:1}}
+@keyframes rebaja{to{fill:var(--con)}}
+@keyframes alarga{to{width:var(--w2)}}
+@keyframes asoma{to{opacity:1}}
+
+.intro h2{margin:0;font-size:clamp(21px,6vw,30px);font-weight:700;letter-spacing:-.02em;
+  line-height:1.22;color:var(--pale);min-height:2.44em;position:relative}
+.intro h2 b{color:var(--gold);font-weight:700}
+.intro .paso{position:absolute;opacity:0;animation:pasoTxt 2s var(--ease) both}
+@keyframes pasoTxt{0%{opacity:0;transform:translateY(7px)}
+  14%,76%{opacity:1;transform:none} 100%{opacity:0;transform:translateY(-5px)}}
+.intro .paso:nth-child(1){animation-delay:.25s}
+.intro .paso:nth-child(2){animation-delay:2.45s}
+.intro .paso:nth-child(3){animation-delay:4.45s}
+.intro .paso:nth-child(4){animation:pasoTxt 1.6s var(--ease) 6.45s both}
+
+.intro .pie{display:flex;align-items:center;gap:14px}
+.intro .barraTpo{flex:1;height:2px;border-radius:2px;background:var(--ln);overflow:hidden}
+.intro .barraTpo i{display:block;height:100%;width:100%;transform-origin:0 50%;
+  background:linear-gradient(90deg,var(--gold),var(--teal-l));
+  animation:tpo var(--intro,7.6s) linear both}
+@keyframes tpo{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.intro .saltar{background:none;border:1px solid var(--ln-2);border-radius:999px;
+  padding:7px 15px;font-size:11.5px;color:var(--tx-2)}
+.intro .saltar:hover{background:var(--app-2);color:var(--tx)}
+
+@media(prefers-reduced-motion:reduce){
+  /* sin movimiento: se muestra el estado final y la intro se cierra enseguida */
+  .intro .barra,.intro .barra.caro,.intro .tope,.intro .marca,.intro .paso,
+  .intro .barraTpo i{animation:none;opacity:1}
+  .intro .barra.caro{width:var(--w2);fill:var(--con)}
+  .intro .paso:not(:last-child){display:none}
+}
+
+/* enlace para volver a verla, en el pie del paso 1 */
+.verIntro{background:none;border:0;padding:0;color:var(--teal-l);font:inherit;
+  font-size:11px;text-decoration:underline;cursor:pointer}
+
 /* ====================== lámina de marca antes del informe ======================
    Cuatro segundos entre apretar el botón y el PDF. Sirve para dos cosas: la marca queda
    en la retina del asistente justo antes de leer el informe, y el navegador tiene tiempo
@@ -377,6 +453,7 @@ select{
   <p class="pieapp">
     Precios en dólares de junio de 2026. La negociación entra en vigencia en el segundo
     semestre de 2027. <b>No se consideran transferencias de riesgo entre las partes.</b>
+    <button class="verIntro" id="verIntro" type="button">¿Qué es esto?</button>
   </p>
   <div class="marcaPie" id="marcaPie"></div>
 </section>
@@ -418,6 +495,23 @@ select{
 </section>
 
 </main>
+
+<!-- ===================== intro: qué es esto ===================== -->
+<div class="intro" id="intro" hidden>
+  <div class="intro-in">
+    <h2>
+      <span class="paso">Hoy la cuenta de la luz paga <b>contratos firmados hace años</b>.</span>
+      <span class="paso">La ley permite <b>renegociar su precio</b>, una sola vez.</span>
+      <span class="paso">A cambio, el contrato <b>dura más años</b>.</span>
+      <span class="paso">Simula el canje y mira <b>cuánto cambia la cuenta</b>.</span>
+    </h2>
+    <svg id="introSvg" viewBox="0 0 520 200" aria-hidden="true"></svg>
+    <div class="pie">
+      <span class="barraTpo"><i></i></span>
+      <button class="saltar" id="introSaltar" type="button">Saltar</button>
+    </div>
+  </div>
+</div>
 
 <!-- ============ lámina de marca mientras se abre el informe ============ -->
 <div class="splash" id="splash" hidden>
@@ -3514,6 +3608,97 @@ if(location.search.includes('registros')){
     $('reintentar').textContent = `Quedan ${leerCola().length}`;
   });
 }
+
+
+/* ============================================================
+   Intro: qué es esto, en tres tiempos
+   ============================================================
+   Las barras son contratos de verdad: el largo son los años que le quedan a cada uno desde
+   que entra la negociación, y el color es su precio. Se eligen los del bloque por omisión
+   más una muestra del resto, para que se vea una cartera y no una ilustración.
+
+   Dura MS_INTRO y se puede saltar en cualquier momento. Se muestra una sola vez por
+   dispositivo; `?intro` la fuerza y el enlace del pie la repite. */
+const MS_INTRO = 7600;
+const VIO_INTRO = 'spec_vio_intro';
+
+/* El bloque que la intro muestra negociando: el primero de la grilla, que es el más caro y
+ * el que el landing trae elegido. Acá no existe la constante de bloques por omisión del
+ * template de la app completa — usarla rompía el script entero y la intro no aparecía. */
+const BLOQUE_INTRO = GRILLA.lics[0].lic;
+
+function dibujarIntro(){
+  const svg = $('introSvg');
+  const W = 520, x0 = 14, ancho = W - x0 - 54;
+  const fc = FC_MIN;
+  const vig = DATA.filter(c => mes(c.ini) <= fc && fc <= mes(c.fin));
+  const meses = c => mes(c.fin) - fc;
+  const topeM = Math.max(...vig.map(meses));
+
+  /* Una muestra de nueve: los del bloque que negocia por omisión, y el resto repartido por
+   * precio para que la cartera se vea variada. */
+  const delBloque = vig.filter(c => c.lic === BLOQUE_INTRO);
+  const otros = vig.filter(c => c.lic !== BLOQUE_INTRO)
+                   .sort((a,b) => b.pIdx - a.pIdx);
+  const muestra = [delBloque[0], delBloque[1], delBloque[2]].filter(Boolean)
+    .concat([0, 0.25, 0.5, 0.72, 0.9, 1].map(f =>
+      otros[Math.min(otros.length - 1, Math.round(f * (otros.length - 1)))]).filter(Boolean))
+    .slice(0, 9)
+    .sort((a,b) => b.pIdx - a.pIdx);
+
+  const alto = 18, hueco = 9, y0 = 12;
+  const H = muestra.length * (alto + hueco) + 32;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  const EXT = 8;                                  // los años que se muestran de extensión
+  let s = `<line class="hoy" x1="${x0}" y1="4" x2="${x0}" y2="${H - 20}"/>`;
+  muestra.forEach((c, i) => {
+    const y = y0 + i * (alto + hueco);
+    const w1 = Math.max(10, ancho * meses(c) / topeM);
+    const w2 = Math.min(ancho, ancho * (meses(c) + EXT * 12) / topeM);
+    const caro = c.lic === BLOQUE_INTRO;
+    s += `<rect class="barra${caro ? ' caro' : ''}" x="${x0}" y="${y}" height="${alto}" rx="3"`
+       + ` fill="var(--sin)"`
+       + ` style="--i:${i};--w1:${w1.toFixed(1)}px;--w2:${w2.toFixed(1)}px"`
+       + ` opacity="${caro ? .95 : .5}"/>`;
+  });
+  // la línea del tope aparece con la extensión, para que se vea hasta dónde llega
+  const xt = x0 + Math.min(ancho, ancho * (Math.max(...muestra.filter(c => c.lic === BLOQUE_INTRO)
+                 .map(meses), 0) + EXT * 12) / topeM);
+  s += `<line class="tope" x1="${xt}" y1="2" x2="${xt}" y2="${H - 20}"/>`;
+  s += `<text class="marca" x="${x0}" y="${H - 6}" style="animation-delay:.5s">hoy</text>`
+     + `<text class="marca" x="${xt}" y="${H - 6}" text-anchor="middle"`
+     + ` style="animation-delay:4.9s">+${EXT} años</text>`;
+  svg.innerHTML = s;
+}
+
+let introTimer = null;
+function introAbrir(){
+  dibujarIntro();
+  $('intro').style.setProperty('--intro', MS_INTRO + 'ms');
+  $('intro').hidden = false;
+  document.body.style.overflow = 'hidden';
+  clearTimeout(introTimer);
+  introTimer = setTimeout(introCerrar, MS_INTRO);
+}
+function introCerrar(){
+  clearTimeout(introTimer);
+  $('intro').hidden = true;
+  document.body.style.overflow = '';
+  try{ localStorage.setItem(VIO_INTRO, '1'); }catch(_){}
+}
+$('introSaltar').addEventListener('click', introCerrar);
+$('verIntro').addEventListener('click', introAbrir);
+$('intro').addEventListener('click', e => { if(e.target === $('intro')) introCerrar(); });
+addEventListener('keydown', e => { if(e.key === 'Escape' && !$('intro').hidden) introCerrar(); });
+
+/* Se muestra una sola vez por dispositivo. `?intro` la fuerza, que es lo que conviene tener a
+ * mano para probarla y para el computador que se proyecta en la sala. */
+(function(){
+  let vista = false;
+  try{ vista = localStorage.getItem(VIO_INTRO) === '1'; }catch(_){}
+  if(location.search.includes('intro') || !vista) introAbrir();
+})();
 
 /* ============================ arranque ============================ */
 marcar();
