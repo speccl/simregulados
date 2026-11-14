@@ -359,9 +359,11 @@ select{
   background:linear-gradient(90deg,var(--gold),var(--teal-l));
   animation:tpo var(--intro,10.6s) linear both}
 @keyframes tpo{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+/* 44 px de alto: es el único control mientras corre la intro y a 35 px quedaba bajo el
+   mínimo de un objetivo táctil. */
 .intro .saltar{background:color-mix(in oklab,var(--ink-2) 70%,transparent);
-  border:1px solid var(--ln-2);border-radius:999px;padding:8px 16px;font-size:11.5px;
-  color:var(--tx-2);backdrop-filter:blur(6px)}
+  border:1px solid var(--ln-2);border-radius:999px;padding:0 20px;min-height:44px;
+  font-size:12.5px;color:var(--tx-2);backdrop-filter:blur(6px)}
 .intro .saltar:hover{background:var(--app-2);color:var(--tx)}
 
 @media(prefers-reduced-motion:reduce){
