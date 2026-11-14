@@ -284,75 +284,57 @@ select{
   stroke-linecap:round;stroke-linejoin:round}
 
 
-/* ====================== intro: qué es esto, en tres tiempos ======================
-   Seis segundos antes de la primera pantalla. La mayoría de quien llega a un evento no sabe
-   qué significa «renegociar contratos regulados» en concreto, y tres escenas lo dicen mejor
-   que un párrafo que nadie lee de pie.
+/* ====================== intro: el río ======================
+   Ocho segundos antes de la primera pantalla. La energía y la plata fluyen por el tiempo:
+   un río de partículas corre de izquierda a derecha a la altura del precio, cae en cascada
+   cuando se renegocia, y se alarga cuando se entrega plazo a cambio.
 
-   Todo es SVG y CSS: sin librerías, como el resto del proyecto. Las barras son los contratos
-   de verdad —precio indexado a jun-2026, altura proporcional— y no una decoración. */
-.intro{position:fixed;inset:0;z-index:130;display:grid;place-items:center;
-  background:var(--ink-2);padding:22px}
+   Va en canvas y no en SVG porque son cientos de partículas con estela, y porque el
+   resplandor se consigue dibujando en modo `lighter` sobre un lienzo que se limpia con un
+   velo translúcido en vez de borrarse. Eso —la estela— es lo que hace que la caída se vea
+   como una cascada y no como un salto.
+
+   Sin librerías, como todo el resto. */
+.intro{position:fixed;inset:0;z-index:130;background:var(--ink-2);overflow:hidden}
 .intro[hidden]{display:none}
-.intro::before{content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(62% 44% at 80% 10%,color-mix(in oklab,var(--teal) 46%,transparent),
-             transparent 68%),
-             radial-gradient(52% 38% at 6% 94%,color-mix(in oklab,var(--gold) 12%,transparent),
+.intro canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.intro::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(58% 42% at 82% 8%,color-mix(in oklab,var(--teal) 30%,transparent),
              transparent 70%)}
-.intro-in{position:relative;width:100%;max-width:520px;display:flex;flex-direction:column;
-  gap:26px}
 
-.intro svg{width:100%;height:auto;display:block;overflow:visible}
+.intro-in{position:absolute;inset:auto 0 0;padding:26px 22px max(26px,env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:20px;
+  background:linear-gradient(transparent,color-mix(in oklab,var(--ink-2) 86%,transparent) 42%)}
+@media(min-width:640px){ .intro-in{padding:34px 40px 34px} }
 
-/* Cada barra es un contrato: el LARGO son los años que le quedan y el COLOR es su precio.
-   Con dos codificaciones distintas, la rebaja se ve como un cambio de color y la extensión
-   como la barra creciendo — dos movimientos que no se confunden entre sí. Con barras
-   verticales de precio, «dura más años» no se veía por ninguna parte. */
-.intro .barra{width:var(--w1);animation:barraEntra .55s var(--ease) both;
-  animation-delay:calc(var(--i) * .055s)}
-.intro .barra.caro{
-  animation:barraEntra .55s var(--ease) both,
-            rebaja .75s var(--ease) forwards,
-            alarga .85s var(--ease) forwards;
-  animation-delay:calc(var(--i) * .055s), 2.7s, 4.6s}
-.intro .hoy{stroke:var(--ln-2);stroke-width:1}
-.intro .tope{stroke:var(--gold);stroke-width:1.3;stroke-dasharray:4 4;opacity:0;
-  animation:asoma .6s var(--ease) 4.6s both}
-.intro .marca{fill:var(--tx-2);font-size:11px;opacity:0;
-  animation:asoma .6s var(--ease) both}
-
-@keyframes barraEntra{from{width:0;opacity:0}to{width:var(--w1);opacity:1}}
-@keyframes rebaja{to{fill:var(--con)}}
-@keyframes alarga{to{width:var(--w2)}}
-@keyframes asoma{to{opacity:1}}
-
-.intro h2{margin:0;font-size:clamp(21px,6vw,30px);font-weight:700;letter-spacing:-.02em;
-  line-height:1.22;color:var(--pale);min-height:2.44em;position:relative}
+.intro h2{margin:0;font-size:clamp(23px,6.4vw,34px);font-weight:700;letter-spacing:-.025em;
+  line-height:1.18;color:var(--pale);min-height:2.4em;position:relative;max-width:620px}
 .intro h2 b{color:var(--gold);font-weight:700}
-.intro .paso{position:absolute;opacity:0;animation:pasoTxt 2s var(--ease) both}
-@keyframes pasoTxt{0%{opacity:0;transform:translateY(7px)}
-  14%,76%{opacity:1;transform:none} 100%{opacity:0;transform:translateY(-5px)}}
-.intro .paso:nth-child(1){animation-delay:.25s}
-.intro .paso:nth-child(2){animation-delay:2.45s}
-.intro .paso:nth-child(3){animation-delay:4.45s}
-.intro .paso:nth-child(4){animation:pasoTxt 1.6s var(--ease) 6.45s both}
+.intro .paso{position:absolute;opacity:0;animation:pasoTxt 2.2s var(--ease) both}
+@keyframes pasoTxt{0%{opacity:0;transform:translateY(10px);filter:blur(4px)}
+  12%,74%{opacity:1;transform:none;filter:blur(0)}
+  100%{opacity:0;transform:translateY(-6px);filter:blur(3px)}}
+.intro .paso:nth-child(1){animation-delay:.3s}
+.intro .paso:nth-child(2){animation-delay:2.5s}
+.intro .paso:nth-child(3){animation-delay:4.7s}
+.intro .paso:nth-child(4){animation:pasoTxt 2s var(--ease) 6.9s both}
 
 .intro .pie{display:flex;align-items:center;gap:14px}
 .intro .barraTpo{flex:1;height:2px;border-radius:2px;background:var(--ln);overflow:hidden}
 .intro .barraTpo i{display:block;height:100%;width:100%;transform-origin:0 50%;
   background:linear-gradient(90deg,var(--gold),var(--teal-l));
-  animation:tpo var(--intro,7.6s) linear both}
+  animation:tpo var(--intro,8.6s) linear both}
 @keyframes tpo{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-.intro .saltar{background:none;border:1px solid var(--ln-2);border-radius:999px;
-  padding:7px 15px;font-size:11.5px;color:var(--tx-2)}
+.intro .saltar{background:color-mix(in oklab,var(--ink-2) 70%,transparent);
+  border:1px solid var(--ln-2);border-radius:999px;padding:8px 16px;font-size:11.5px;
+  color:var(--tx-2);backdrop-filter:blur(6px)}
 .intro .saltar:hover{background:var(--app-2);color:var(--tx)}
 
 @media(prefers-reduced-motion:reduce){
-  /* sin movimiento: se muestra el estado final y la intro se cierra enseguida */
-  .intro .barra,.intro .barra.caro,.intro .tope,.intro .marca,.intro .paso,
-  .intro .barraTpo i{animation:none;opacity:1}
-  .intro .barra.caro{width:var(--w2);fill:var(--con)}
+  /* sin movimiento: el lienzo dibuja un solo fotograma del estado final y el texto no viaja */
+  .intro .paso{animation:none;opacity:1}
   .intro .paso:not(:last-child){display:none}
+  .intro .barraTpo i{animation:none;transform:scaleX(1)}
 }
 
 /* enlace para volver a verla, en el pie del paso 1 */
@@ -498,6 +480,7 @@ select{
 
 <!-- ===================== intro: qué es esto ===================== -->
 <div class="intro" id="intro" hidden>
+  <canvas id="introLienzo" aria-hidden="true"></canvas>
   <div class="intro-in">
     <h2>
       <span class="paso">Hoy la cuenta de la luz paga <b>contratos firmados hace años</b>.</span>
@@ -505,7 +488,6 @@ select{
       <span class="paso">A cambio, el contrato <b>dura más años</b>.</span>
       <span class="paso">Simula el canje y mira <b>cuánto cambia la cuenta</b>.</span>
     </h2>
-    <svg id="introSvg" viewBox="0 0 520 200" aria-hidden="true"></svg>
     <div class="pie">
       <span class="barraTpo"><i></i></span>
       <button class="saltar" id="introSaltar" type="button">Saltar</button>
@@ -3611,89 +3593,172 @@ if(location.search.includes('registros')){
 
 
 /* ============================================================
-   Intro: qué es esto, en tres tiempos
+   Intro: el río
    ============================================================
-   Las barras son contratos de verdad: el largo son los años que le quedan a cada uno desde
-   que entra la negociación, y el color es su precio. Se eligen los del bloque por omisión
-   más una muestra del resto, para que se vea una cartera y no una ilustración.
+   Un río de partículas que corre de izquierda a derecha. La ALTURA es el precio y la
+   LONGITUD es el tiempo que al contrato le queda, así que renegociar se ve como el río
+   cayendo a un nivel más bajo, y entregar plazo como el río llegando más lejos.
 
-   Dura MS_INTRO y se puede saltar en cualquier momento. Se muestra una sola vez por
-   dispositivo; `?intro` la fuerza y el enlace del pie la repite. */
-const MS_INTRO = 7600;
+   Los dos niveles salen del modelo: son el precio medio de la cartera sin negociar y con
+   negociación, al semestre en que entra en vigencia. La caída que se ve en pantalla es la
+   rebaja de verdad, no una proporción elegida para que luzca.
+
+   El resplandor y la estela no son filtros: se dibuja en modo `lighter` sobre un lienzo que
+   se limpia con un velo translúcido en vez de borrarse. Eso es lo que convierte la bajada en
+   una cascada — cada partícula deja su rastro mientras desciende. */
+const MS_INTRO = 8600;
 const VIO_INTRO = 'spec_vio_intro';
 
-/* El bloque que la intro muestra negociando: el primero de la grilla, que es el más caro y
- * el que el landing trae elegido. Acá no existe la constante de bloques por omisión del
- * template de la app completa — usarla rompía el script entero y la intro no aparecía. */
-const BLOQUE_INTRO = GRILLA.lics[0].lic;
+/* Guion: [desde, hasta] en milisegundos de cada tramo. */
+const T_CAIDA = [2300, 3900];     // el precio baja
+const T_LARGO = [4700, 6200];     // el contrato se extiende
 
-function dibujarIntro(){
-  const svg = $('introSvg');
-  const W = 520, x0 = 14, ancho = W - x0 - 54;
-  const fc = FC_MIN;
-  const vig = DATA.filter(c => mes(c.ini) <= fc && fc <= mes(c.fin));
-  const meses = c => mes(c.fin) - fc;
-  const topeM = Math.max(...vig.map(meses));
+const quad = x => x < .5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
+const avance = (ms, [a, b]) => quad(Math.min(1, Math.max(0, (ms - a) / (b - a))));
 
-  /* Una muestra de nueve: los del bloque que negocia por omisión, y el resto repartido por
-   * precio para que la cartera se vea variada. */
-  const delBloque = vig.filter(c => c.lic === BLOQUE_INTRO);
-  const otros = vig.filter(c => c.lic !== BLOQUE_INTRO)
-                   .sort((a,b) => b.pIdx - a.pIdx);
-  const muestra = [delBloque[0], delBloque[1], delBloque[2]].filter(Boolean)
-    .concat([0, 0.25, 0.5, 0.72, 0.9, 1].map(f =>
-      otros[Math.min(otros.length - 1, Math.round(f * (otros.length - 1)))]).filter(Boolean))
-    .slice(0, 9)
-    .sort((a,b) => b.pIdx - a.pIdx);
+let introRAF = null, introT0 = 0;
 
-  const alto = 18, hueco = 9, y0 = 12;
-  const H = muestra.length * (alto + hueco) + 32;
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+function introRio(){
+  const c = $('introLienzo'), ctx = c.getContext('2d', {alpha: false});
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const EXT = 8;                                  // los años que se muestran de extensión
-  let s = `<line class="hoy" x1="${x0}" y1="4" x2="${x0}" y2="${H - 20}"/>`;
-  muestra.forEach((c, i) => {
-    const y = y0 + i * (alto + hueco);
-    const w1 = Math.max(10, ancho * meses(c) / topeM);
-    const w2 = Math.min(ancho, ancho * (meses(c) + EXT * 12) / topeM);
-    const caro = c.lic === BLOQUE_INTRO;
-    s += `<rect class="barra${caro ? ' caro' : ''}" x="${x0}" y="${y}" height="${alto}" rx="3"`
-       + ` fill="var(--sin)"`
-       + ` style="--i:${i};--w1:${w1.toFixed(1)}px;--w2:${w2.toFixed(1)}px"`
-       + ` opacity="${caro ? .95 : .5}"/>`;
+  /* Los dos niveles de precio, del modelo. Si algo faltara, el río igual corre: la intro no
+   * puede quedarse en negro porque un dato no estaba. */
+  let pSin = 94, pCon = 82;
+  try{
+    const r = corte(DATA, cfg(SEL));
+    if(r.pSin > 0 && r.pCon > 0){ pSin = r.pSin; pCon = r.pCon; }
+  }catch(_){}
+
+  let W = 0, H = 0, dpr = 1, N = 0, P = [];
+  const col = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const ACERO = col('--sin') || '#9FBAC7', ORO = col('--con') || '#E7C873';
+
+  function medir(){
+    dpr = Math.min(2, devicePixelRatio || 1);
+    W = c.clientWidth; H = c.clientHeight;
+    c.width = W * dpr; c.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // la densidad sigue al área, con tope: en un teléfono modesto 420 partículas con estela
+    // ya llenan el cuadro de 16 ms
+    N = Math.max(260, Math.min(700, Math.round(W * H / 1700)));
+    P = Array.from({length: N}, () => nueva(Math.random()));
+  }
+  const nueva = (x0) => ({
+    x: x0, v: 0.10 + Math.random() * 0.22,   // posición y velocidad en fracción de ancho
+    d: Math.random() * 2 - 1,                // dispersión vertical dentro del cauce
+    r: 0.7 + Math.random() * 1.9,            // radio
+    a: 0.25 + Math.random() * 0.75,          // opacidad
   });
-  // la línea del tope aparece con la extensión, para que se vea hasta dónde llega
-  const xt = x0 + Math.min(ancho, ancho * (Math.max(...muestra.filter(c => c.lic === BLOQUE_INTRO)
-                 .map(meses), 0) + EXT * 12) / topeM);
-  s += `<line class="tope" x1="${xt}" y1="2" x2="${xt}" y2="${H - 20}"/>`;
-  s += `<text class="marca" x="${x0}" y="${H - 6}" style="animation-delay:.5s">hoy</text>`
-     + `<text class="marca" x="${xt}" y="${H - 6}" text-anchor="middle"`
-     + ` style="animation-delay:4.9s">+${EXT} años</text>`;
-  svg.innerHTML = s;
+
+  /* Geometría, en fracciones de la pantalla. El río SANGRA por los dos costados: encerrado
+   * en el cuadro se ve como un objeto, y sangrando se ve como un caudal que viene de antes
+   * y sigue después. El cauce vive en la mitad superior porque el texto ocupa el pie.
+   *
+   * Las DOS alturas son los dos precios de verdad —sin negociar y negociado—, pero la escala
+   * entre ellas está abierta a toda la banda: en una escala de precios absoluta una rebaja
+   * de 13% son treinta píxeles y la caída, que es el momento de toda la animación, no se ve.
+   * Esto no es un gráfico y no lleva eje; son un antes y un después. */
+  const yA = 0.30, yB = 0.56;
+  const yDe = pr => H * (pSin === pCon ? (yA + yB) / 2
+    : yA + (yB - yA) * (pSin - pr) / (pSin - pCon));
+  const X0 = -0.04, X1 = 0.64, X2 = 1.06;
+
+  function cuadro(ms){
+    const kCaida = avance(ms, T_CAIDA), kLargo = avance(ms, T_LARGO);
+    const precio = pSin + (pCon - pSin) * kCaida;
+    const yc = yDe(precio);
+    const xFin = X1 + (X2 - X1) * kLargo;
+    const grosor = H * 0.085;
+
+    // velo en vez de borrado: de ahí sale la estela
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(5,18,30,0.17)';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.globalCompositeOperation = 'lighter';
+
+    for(const p of P){
+      p.x += p.v * 0.0075 * (1 + kLargo * 0.5);
+      if(p.x > xFin + 0.03) { Object.assign(p, nueva(X0 - Math.random() * 0.05)); continue; }
+      if(p.x < X0) continue;
+      const x = W * p.x;
+      // el cauce ondula: sin esto el río es una barra recta y se ve inerte
+      const onda = Math.sin(p.x * 9 + ms / 520 + p.d * 3) * grosor * 0.34;
+      const y = yc + p.d * grosor * 0.72 + onda;
+      // el color viaja de acero a oro con la rebaja
+      const cl = kCaida < 0.5 ? ACERO : ORO;
+      const brillo = 0.5 + 0.5 * Math.sin(p.x * 14 + ms / 300);
+      // se desvanece contra los dos extremos para que el caudal no termine en un corte
+      const borde = Math.min(1, (p.x - X0) / 0.10, (xFin - p.x) / 0.10);
+      // un destello mientras cae: la cascada se enciende y vuelve a su brillo
+      const chispa = 1 + 1.1 * Math.sin(Math.PI * kCaida) * (kCaida < 1 ? 1 : 0);
+      const al = Math.min(1, p.a * (0.3 + 0.45 * brillo) * Math.max(0, borde) * chispa);
+      ctx.fillStyle = cl;
+      // halo y núcleo: dos círculos en vez de un filtro. El halo es lo que da el resplandor
+      ctx.globalAlpha = al * 0.16;
+      ctx.beginPath(); ctx.arc(x, y, p.r * 4.2, 0, 6.2832); ctx.fill();
+      ctx.globalAlpha = al;
+      ctx.beginPath(); ctx.arc(x, y, p.r * (1 + 0.45 * brillo), 0, 6.2832); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // la marca del plazo entregado, cuando el río ya llegó
+    if(kLargo > 0.05){
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = Math.min(1, kLargo * 1.6);
+      ctx.strokeStyle = ORO; ctx.lineWidth = 1.2; ctx.setLineDash([4, 5]);
+      const xm = Math.min(W * xFin, W - 18);
+      ctx.beginPath(); ctx.moveTo(xm, yc - grosor * 2.6);
+      ctx.lineTo(xm, yc + grosor * 2.6); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = ORO; ctx.font = '600 13px "Be Vietnam Pro",system-ui,sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('+8 años', xm - 10, yc - grosor * 2.6 - 10);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  medir();
+  addEventListener('resize', medir);
+  ctx.fillStyle = '#05121E'; ctx.fillRect(0, 0, W, H);
+
+  if(quieto){                       // un solo fotograma del estado final
+    for(let i = 0; i < 90; i++) cuadro(MS_INTRO);
+    return () => removeEventListener('resize', medir);
+  }
+  introT0 = performance.now();
+  (function late(ahora){
+    cuadro(ahora - introT0);
+    introRAF = requestAnimationFrame(late);
+  })(introT0);
+  return () => { cancelAnimationFrame(introRAF); removeEventListener('resize', medir); };
 }
 
-let introTimer = null;
+let introLimpiar = null, introTimer = null;
 function introAbrir(){
-  dibujarIntro();
   $('intro').style.setProperty('--intro', MS_INTRO + 'ms');
   $('intro').hidden = false;
   document.body.style.overflow = 'hidden';
+  if(introLimpiar) introLimpiar();
+  introLimpiar = introRio();
   clearTimeout(introTimer);
   introTimer = setTimeout(introCerrar, MS_INTRO);
 }
 function introCerrar(){
   clearTimeout(introTimer);
+  if(introLimpiar){ introLimpiar(); introLimpiar = null; }   // el rAF no queda corriendo
   $('intro').hidden = true;
   document.body.style.overflow = '';
   try{ localStorage.setItem(VIO_INTRO, '1'); }catch(_){}
 }
 $('introSaltar').addEventListener('click', introCerrar);
 $('verIntro').addEventListener('click', introAbrir);
-$('intro').addEventListener('click', e => { if(e.target === $('intro')) introCerrar(); });
+$('intro').addEventListener('click', e => { if(e.target !== $('introSaltar')) introCerrar(); });
 addEventListener('keydown', e => { if(e.key === 'Escape' && !$('intro').hidden) introCerrar(); });
 
-/* Se muestra una sola vez por dispositivo. `?intro` la fuerza, que es lo que conviene tener a
- * mano para probarla y para el computador que se proyecta en la sala. */
+/* Una sola vez por dispositivo. `?intro` la fuerza, que es lo que conviene tener a mano para
+ * probarla y para el computador que se proyecta en la sala. */
 (function(){
   let vista = false;
   try{ vista = localStorage.getItem(VIO_INTRO) === '1'; }catch(_){}
