@@ -298,11 +298,45 @@ select{
 .intro{position:fixed;inset:0;z-index:130;background:var(--ink-2);overflow:hidden}
 .intro[hidden]{display:none}
 .intro canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.intro::after{content:"";position:absolute;inset:0;pointer-events:none;
+/* Luz y viñeta por encima del lienzo. Van en ::after y no en ::before porque el lienzo es un
+   hijo real: ::before se pintaría DEBAJO y no se vería. */
+.intro::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
   background:radial-gradient(58% 42% at 82% 8%,color-mix(in oklab,var(--teal) 30%,transparent),
-             transparent 70%)}
+             transparent 70%),
+             radial-gradient(120% 80% at 50% 50%,transparent 42%,rgba(3,12,20,.55) 100%)}
 
-.intro-in{position:absolute;inset:auto 0 0;padding:26px 22px max(26px,env(safe-area-inset-bottom));
+/* Textura del fondo, en dos capas y sin coste por cuadro.
+   · `.malla` es una retícula de puntos que se desvanece hacia el pie: le da al fondo una
+     trama que además dice «red», y es lo que se percibe como textura a primera vista.
+   · `.grano` es ruido de feTurbulence con el canal ALFA sacado de la luminancia, de modo que
+     el azulejo queda transparente con motas claras. Con un ruido gris y `soft-light` —la
+     primera versión— sobre un fondo casi negro no se movía un pixel y no se veía nada.
+   Las dos van encima del lienzo, porque el lienzo es opaco y tapa cualquier fondo. */
+/* La marca del plazo entregado. Va en el DOM y NO en el lienzo: dibujada en canvas dejaba
+   estela como todo lo demás —el lienzo se limpia con un velo, no se borra— y el rótulo se
+   emborronaba al desplazarse. Acá además el texto queda nítido. */
+.hito{position:absolute;top:24%;bottom:38%;width:0;z-index:2;opacity:0;
+  border-left:1.4px dashed var(--gold);
+  animation:hitoAsoma .7s var(--ease) 6s both, hitoViaja 1.9s var(--ease) 6s both}
+.hito span{position:absolute;top:-26px;right:8px;font-size:13px;font-weight:700;
+  color:var(--gold);white-space:nowrap}
+@keyframes hitoAsoma{from{opacity:0}to{opacity:.95}}
+@keyframes hitoViaja{from{left:64%}to{left:97%}}
+@media(prefers-reduced-motion:reduce){
+  .hito{animation:none;opacity:.95;left:97%}
+}
+
+.malla{position:absolute;inset:0;pointer-events:none;z-index:2;opacity:.5;
+  background-image:radial-gradient(circle,rgba(159,186,199,.22) 1px,transparent 1.4px);
+  background-size:26px 26px;
+  -webkit-mask-image:linear-gradient(transparent,#000 22%,#000 58%,transparent 86%);
+  mask-image:linear-gradient(transparent,#000 22%,#000 58%,transparent 86%)}
+.grano{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:.42;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.9 0 0 0 -0.42'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:300px 300px}
+@media(prefers-reduced-motion:reduce){ .grano{opacity:.3} }
+
+.intro-in{position:absolute;inset:auto 0 0;z-index:4;padding:26px 22px max(26px,env(safe-area-inset-bottom));
   display:flex;flex-direction:column;gap:20px;
   background:linear-gradient(transparent,color-mix(in oklab,var(--ink-2) 86%,transparent) 42%)}
 @media(min-width:640px){ .intro-in{padding:34px 40px 34px} }
@@ -310,20 +344,20 @@ select{
 .intro h2{margin:0;font-size:clamp(23px,6.4vw,34px);font-weight:700;letter-spacing:-.025em;
   line-height:1.18;color:var(--pale);min-height:2.4em;position:relative;max-width:620px}
 .intro h2 b{color:var(--gold);font-weight:700}
-.intro .paso{position:absolute;opacity:0;animation:pasoTxt 2.2s var(--ease) both}
+.intro .paso{position:absolute;opacity:0;animation:pasoTxt 2.9s var(--ease) both}
 @keyframes pasoTxt{0%{opacity:0;transform:translateY(10px);filter:blur(4px)}
   12%,74%{opacity:1;transform:none;filter:blur(0)}
   100%{opacity:0;transform:translateY(-6px);filter:blur(3px)}}
-.intro .paso:nth-child(1){animation-delay:.3s}
-.intro .paso:nth-child(2){animation-delay:2.5s}
-.intro .paso:nth-child(3){animation-delay:4.7s}
-.intro .paso:nth-child(4){animation:pasoTxt 2s var(--ease) 6.9s both}
+.intro .paso:nth-child(1){animation-delay:.35s}
+.intro .paso:nth-child(2){animation-delay:3.05s}
+.intro .paso:nth-child(3){animation-delay:5.95s}
+.intro .paso:nth-child(4){animation:pasoTxt 2.3s var(--ease) 8.6s both}
 
 .intro .pie{display:flex;align-items:center;gap:14px}
 .intro .barraTpo{flex:1;height:2px;border-radius:2px;background:var(--ln);overflow:hidden}
 .intro .barraTpo i{display:block;height:100%;width:100%;transform-origin:0 50%;
   background:linear-gradient(90deg,var(--gold),var(--teal-l));
-  animation:tpo var(--intro,8.6s) linear both}
+  animation:tpo var(--intro,10.6s) linear both}
 @keyframes tpo{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 .intro .saltar{background:color-mix(in oklab,var(--ink-2) 70%,transparent);
   border:1px solid var(--ln-2);border-radius:999px;padding:8px 16px;font-size:11.5px;
@@ -481,12 +515,15 @@ select{
 <!-- ===================== intro: qué es esto ===================== -->
 <div class="intro" id="intro" hidden>
   <canvas id="introLienzo" aria-hidden="true"></canvas>
+  <div class="hito" aria-hidden="true"><span>+8 años</span></div>
+  <div class="malla" aria-hidden="true"></div>
+  <div class="grano" aria-hidden="true"></div>
   <div class="intro-in">
     <h2>
       <span class="paso">Hoy la cuenta de la luz paga <b>contratos firmados hace años</b>.</span>
       <span class="paso">La ley permite <b>renegociar su precio</b>, una sola vez.</span>
       <span class="paso">A cambio, el contrato <b>dura más años</b>.</span>
-      <span class="paso">Simula el canje y mira <b>cuánto cambia la cuenta</b>.</span>
+      <span class="paso">Simula el proceso de negociación y mira <b>cuánto cambia la cuenta</b>.</span>
     </h2>
     <div class="pie">
       <span class="barraTpo"><i></i></span>
@@ -3606,12 +3643,12 @@ if(location.search.includes('registros')){
    El resplandor y la estela no son filtros: se dibuja en modo `lighter` sobre un lienzo que
    se limpia con un velo translúcido en vez de borrarse. Eso es lo que convierte la bajada en
    una cascada — cada partícula deja su rastro mientras desciende. */
-const MS_INTRO = 8600;
+const MS_INTRO = 10600;
 const VIO_INTRO = 'spec_vio_intro';
 
 /* Guion: [desde, hasta] en milisegundos de cada tramo. */
-const T_CAIDA = [2300, 3900];     // el precio baja
-const T_LARGO = [4700, 6200];     // el contrato se extiende
+const T_CAIDA = [2900, 5000];     // el precio baja
+const T_LARGO = [6000, 7900];     // el contrato se extiende
 
 const quad = x => x < .5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
 const avance = (ms, [a, b]) => quad(Math.min(1, Math.max(0, (ms - a) / (b - a))));
@@ -3703,20 +3740,6 @@ function introRio(){
     }
     ctx.globalAlpha = 1;
 
-    // la marca del plazo entregado, cuando el río ya llegó
-    if(kLargo > 0.05){
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = Math.min(1, kLargo * 1.6);
-      ctx.strokeStyle = ORO; ctx.lineWidth = 1.2; ctx.setLineDash([4, 5]);
-      const xm = Math.min(W * xFin, W - 18);
-      ctx.beginPath(); ctx.moveTo(xm, yc - grosor * 2.6);
-      ctx.lineTo(xm, yc + grosor * 2.6); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = ORO; ctx.font = '600 13px "Be Vietnam Pro",system-ui,sans-serif';
-      ctx.textAlign = 'right';
-      ctx.fillText('+8 años', xm - 10, yc - grosor * 2.6 - 10);
-      ctx.globalAlpha = 1;
-    }
   }
 
   medir();
@@ -3736,9 +3759,19 @@ function introRio(){
 }
 
 let introLimpiar = null, introTimer = null;
+/* Las animaciones CSS corren una sola vez. Al reabrir la intro —con «¿Qué es esto?»— ya
+ * están terminadas y, con `fill: both`, se quedan congeladas en su último fotograma: la
+ * segunda vez la intro salía muda, con el lienzo corriendo y ni un texto. Quitarles la
+ * animación, forzar un reflujo y devolvérsela es lo que las rearma. */
+function reiniciarAnimaciones(){
+  document.querySelectorAll('.intro .paso, .intro .hito, .intro .barraTpo i')
+    .forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
+}
+
 function introAbrir(){
   $('intro').style.setProperty('--intro', MS_INTRO + 'ms');
   $('intro').hidden = false;
+  reiniciarAnimaciones();
   document.body.style.overflow = 'hidden';
   if(introLimpiar) introLimpiar();
   introLimpiar = introRio();
