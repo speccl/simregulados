@@ -562,7 +562,7 @@ select{
   </div>
 
   <button class="btn" id="simular" hidden>
-    Simular
+    <span class="txt">Simular</span>
     <svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
   </button>
 
@@ -574,6 +574,51 @@ select{
     <button class="verIntro" id="verIntro" type="button">¿Qué es esto?</button>
   </p>
   <div class="marcaPie" id="marcaPie"></div>
+</section>
+
+<!-- ============== el escenario base: el contrafactual ==============
+     No es un resultado de simulación: es el punto de comparación. Por eso tiene pantalla
+     propia y no la del resultado — ahí todo son diferencias, y acá todas valen cero. Lo que
+     hay que mostrar son NIVELES: qué precio tiene la cartera, de dónde sale la energía y
+     cuándo deja de alcanzar. Tampoco pide registro: esto es contexto, no el informe de
+     nadie, y ponerle una puerta sería cobrar por explicar la regla del juego. -->
+<section class="paso" id="paso3" hidden>
+  <h2 class="titRes" id="titBase"></h2>
+  <div class="eleccion" id="eleccionBase"></div>
+
+  <div class="kpis" id="kpisBase"></div>
+
+  <div class="tarjeta sup">
+    <h3>Precio medio de la cartera</h3>
+    <p class="gl">Sin negociar, en dólares de junio de 2026. <span id="basePrecioNota"></span></p>
+    <svg class="grafico" id="chBasePrecio" aria-label="Precio medio de la cartera"></svg>
+  </div>
+
+  <div class="tarjeta sup">
+    <h3>De dónde sale la energía</h3>
+    <p class="gl">En miles de GWh al año. La cartera vence y la demanda crece: lo que falta
+      se licita.</p>
+    <svg class="grafico" id="chBaseEnergia" aria-label="Origen de la energía"></svg>
+    <div class="leyenda">
+      <span><i style="background:var(--teal-l)"></i>contratos vigentes</span>
+      <span><i style="background:var(--steel)"></i>licitada</span>
+      <span><i style="background:var(--gold)"></i>demanda</span>
+    </div>
+  </div>
+
+  <div id="notaBase"></div>
+
+  <button class="btn" id="volverBase">
+    <span class="txt">Elegir un bloque y comparar</span>
+    <svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+  </button>
+
+  <p class="pieapp">
+    Precios en dólares de junio de 2026. Ésta es la trayectoria contra la que el simulador
+    mide cualquier ahorro: la misma cartera corriendo a sus plazos originales, con las
+    licitaciones que harían falta para cubrir la demanda proyectada.
+    <b>No se consideran transferencias de riesgo entre las partes.</b>
+  </p>
 </section>
 
 <!-- ===================== paso 2: el resultado ===================== -->
@@ -3222,7 +3267,13 @@ const mesTxt = s => { const [y,m] = s.split('-'); return MESES[+m-1] + ' de ' + 
 /* Nada viene preelegido: con valores por omisión no hay nada que revelar, y aceptar lo que
  * ya estaba puesto no se siente como una decisión propia. `null` es «todavía no elige». */
 const SEL = {lic:null, precio:null, plazo:null};
-const PASO = () => SEL.lic == null ? 1 : (SEL.precio == null ? 2 : (SEL.plazo == null ? 3 : 4));
+/* El escenario base. No es un bloque: es «no negociar nada», y entonces las otras dos
+ * decisiones no existen. Se usa un centinela y no `null` porque `null` ya significa
+ * «todavía no elige», que es otra cosa. */
+const BASE = 'SIN_NEGOCIAR';
+const esBase = () => SEL.lic === BASE;
+const PASO = () => SEL.lic == null ? 1
+  : (esBase() ? 4 : (SEL.precio == null ? 2 : (SEL.plazo == null ? 3 : 4)));
 
 const licDe = l => GRILLA.lics.find(o => o.lic === l) || GRILLA.lics[0];
 
@@ -3253,7 +3304,9 @@ function cfg(sel){
     clpUsd: TIPOCAMBIO.clpUsd,
     modo: 'grupo',
     grupoPor: 'lic',
-    grupos: [sel.lic],
+    /* Sin bloque no negocia nadie y la rama «con» queda idéntica a la «sin»: eso es
+     * exactamente el contrafactual, calculado por el mismo camino y no por uno aparte. */
+    grupos: (sel.lic == null || sel.lic === BASE) ? [] : [sel.lic],
     extension: sel.plazo,
     aceptacion: false,
     tasa: DEF.tasa/100,
@@ -3288,7 +3341,11 @@ $('pieTasa').textContent    = fmt(DEF.tasa,0);
 $('pieTasaC').textContent   = fmt(DEF.tasaCliente,1);
 
 $('lic').innerHTML = '<option value="" disabled selected>Elige un bloque de contratos…</option>'
-  + GRILLA.lics.map(l => `<option value="${l.lic}">${l.lic}</option>`).join('');
+  + GRILLA.lics.map(l => `<option value="${l.lic}">${l.lic}</option>`).join('')
+  /* No negociar es una opción, y es la que hay que poder ver: es el contrafactual contra el
+   * que se mide TODO lo demás de la herramienta. Sin ella, el cero del que parte cada ahorro
+   * es una afirmación nuestra que nadie puede mirar. Va al final, separada. */
+  + `<option value="${BASE}">— No negociar: ver el escenario base —</option>`;
 
 function fichas(cont, valores, nombre, etq, sub){
   cont.innerHTML = valores.map((v,i) => {
@@ -3310,11 +3367,15 @@ fichas($('plazos'),  GRILLA.plazos,  'plazo', v => v, v => v === 1 ? 'año' : 'a
  * mínimo necesario, de modo que no sacude la pantalla cuando ya se veía. */
 let pasoPrevio = 0;
 function revelar(){
-  const n = PASO();
+  const n = PASO(), base = esBase();
   [['g1', SEL.lic], ['g2', SEL.precio], ['g3', SEL.plazo]].forEach(([id, v], i) => {
     $(id).dataset.estado = v != null ? 'listo' : (i + 1 === n ? 'activo' : 'espera');
   });
+  /* Con el escenario base los pasos 2 y 3 no se apagan: desaparecen. Dejarlos en espera
+   * diría que falta elegirlos, y no falta nada — no hay precio ni plazo que acordar. */
+  $('g2').hidden = base; $('g3').hidden = base;
   $('simular').hidden = n < 4;
+  $('simular').querySelector('.txt').textContent = base ? 'Ver el escenario base' : 'Simular';
 
   if(n !== pasoPrevio && pasoPrevio !== 0){
     const nuevo = n === 4 ? $('simular') : $('g' + n);
@@ -3343,8 +3404,11 @@ function marcar(){
 function lecturas(){
   revelar();
   dibujarSilueta();
-  if(SEL.lic == null){ $('licDatos').innerHTML = ''; $('precioLee').textContent = '';
-                       $('plazoLee').textContent = ''; return; }
+  if(SEL.lic == null || esBase()){
+    $('licDatos').innerHTML = '';
+    $('precioLee').textContent = ''; $('plazoLee').textContent = '';
+    return;
+  }
   const l = licDe(SEL.lic);
   $('licDatos').innerHTML = [
     ['Contratos', fmt0(l.n), 'en el bloque'],
@@ -3462,7 +3526,7 @@ function escDe(lic, precio){
  * ve de una vez lo que el precio elegido dejó sin tomar. */
 function pintarRegla(){
   const box = $('regla');
-  if(SEL.lic == null){ box.hidden = true; return; }
+  if(SEL.lic == null || esBase()){ box.hidden = true; return; }
   box.hidden = false;
   const pot = tamano(SEL.lic, PMIN);
   const f = SEL.precio == null ? pot : tamano(SEL.lic, SEL.precio);
@@ -3487,9 +3551,14 @@ function dibujarSilueta(){
   const anios = `<text x="0" y="${H - 1}">${YA}</text>`
               + `<text x="${W}" y="${H - 1}" text-anchor="end">${Y1}</text>`;
 
-  if(SEL.lic == null){
+  if(SEL.lic == null || esBase()){
     svg.innerHTML = cero + anios;
-    $('siluetaPie').textContent = 'Elige un bloque y aquí se dibuja la forma del acuerdo.';
+    /* Con el escenario base la línea plana no es una figura vacía: es el punto de
+     * comparación. Todo lo verde y lo rojo que dibuja esta franja se mide contra ella. */
+    $('siluetaPie').textContent = esBase()
+      ? 'El escenario base es esta línea: sin negociar no hay ni ahorro ni sobrecosto. '
+        + 'Es el cero contra el que se mide todo lo demás.'
+      : 'Elige un bloque y aquí se dibuja la forma del acuerdo.';
     return;
   }
 
@@ -3549,6 +3618,7 @@ addEventListener('resize', () => { if(!$('paso1').hidden) dibujarSilueta(); });
 let ULTIMO = null;   // {sel, k, r, t} de la simulación mostrada
 
 function simular(){
+  if(esBase()) return verBase();
   // el botón sólo existe con las tres tomadas, pero la guarda evita un NaN si algo lo llama
   if(SEL.lic == null || SEL.precio == null || SEL.plazo == null) return;
   const sel = {...SEL};
@@ -3726,18 +3796,157 @@ function chAnual(r){
   svg.innerHTML = s;
 }
 
+/* ============ el escenario base: niveles, no diferencias ============ */
+let BASER = null;
+
+function verBase(){
+  const k = cfg({lic: BASE, precio: null, plazo: 0});
+  const r = evaluar(DATA, k), t = tarifa(k, r);
+  const a = r.anual, u = a[a.length - 1];
+  BASER = {k, r, t};
+
+  const licNuevo = u.eNuevo / Math.max(1, u.eNuevo + u.eBase) * 100;
+  const prim = a.find(x => x.eNuevo > 0.5);
+  $('titBase').textContent =
+      `Sin negociar, en ${u.y} el ${fmt0(licNuevo)}% de la energía viene de licitaciones`
+    + ' que todavía no existen';
+  $('eleccionBase').innerHTML =
+      `<span class="tres"><b>Escenario base</b><span class="mas">·</span>`
+    + `<b>${fmt0(r.eV)} GWh/año sin renegociar</b></span>`
+    + `<button type="button" id="cambiarBase">cambiar</button>`;
+  $('cambiarBase').addEventListener('click', volver);
+
+  /* El precio real cae y el nominal no: decirlo acá evita que la trayectoria se lea como
+   * que la cuenta baja sola. Es la misma salvedad que hace el modelo con los campos …R. */
+  $('basePrecioNota').textContent =
+      `En dólares corrientes va de ${fmt(a[0].sin, 0)} a ${fmt(u.sin, 0)} USD/MWh: lo que `
+    + 'cae es el poder de compra, no el precio.';
+
+  const tarj = [
+    ['Precio de la cartera', fmt(a[0].sinR, 1), 'USD/MWh', 'hi',
+     `en ${a[0].y} · baja a ${fmt(u.sinR, 1)} en ${u.y}, en la misma moneda`],
+    ['Primera licitación', prim ? prim.y : '—', '', 'hi',
+     'el año en que la cartera deja de cubrir la demanda'],
+    ['Energía bajo contrato', fmt0(a[0].eBase), 'GWh/año', '',
+     `en ${a[0].y} · queda ${fmt0(u.eBase)} en ${u.y}`],
+    ['La cuenta de la luz', fmt(t.cuentaSin, 2), 'USD/mes', '',
+     `${fmt0(k.consumo)} kWh/mes con IVA · ≈ ${fmt0(t.cuentaSin * k.clpUsd)} CLP/mes`],
+  ];
+  $('kpisBase').innerHTML = tarj.map(([kk, v, u2, cl, pie]) =>
+    `<div class="kpi ${cl}"><div class="k">${kk}</div>`
+    + `<div class="v">${v}${u2 ? `<span class="u">${u2}</span>` : ''}</div>`
+    + `<div class="pie">${pie}</div></div>`).join('');
+
+  $('notaBase').innerHTML =
+      '<div class="aviso"><b>Éste es el cero del simulador.</b> Cualquier ahorro que muestre '
+    + 'un escenario negociado es la diferencia contra esta trayectoria, no contra la cartera '
+    + 'de hoy congelada: la comparación honesta es el costo de abastecer la misma demanda de '
+    + 'dos maneras.</div>';
+
+  chBase();
+  $('sub').textContent = URL_SIM || $('sub').textContent;
+  $('paso1').hidden = true;
+  $('paso3').hidden = false;
+  window.scrollTo(0, 0);
+}
+
+function chBase(){
+  if(!BASER) return;
+  chBasePrecio(BASER.r.anual);
+  chBaseEnergia(BASER.r.anual);
+}
+
+/* Escala para un eje que PARTE EN CERO, con unas cuatro divisiones. `escalaLinda` no sirve
+ * acá: está hecha para un eje simétrico de dos divisiones por lado, y con un máximo de
+ * 52.000 GWh devolvía un tope de 100.000 que dejaba la mitad de la caja vacía. */
+function escalaBase(mx){
+  const bruto = Math.max(1e-9, mx / 4);
+  const exp = Math.pow(10, Math.floor(Math.log10(bruto)));
+  let paso = exp * 10;
+  for(const m of [1, 2, 2.5, 5, 10]) if(m * exp >= bruto){ paso = m * exp; break; }
+  return {paso, tope: Math.ceil(mx / paso) * paso};
+}
+
+/* Marco común de los dos gráficos del escenario base: rejilla, marcas del eje y años.
+ * Devuelve las funciones de posición para que cada uno dibuje sólo lo suyo.
+ *
+ * Los dos ejes arrancan en cero. En el de energía no hay alternativa —son bandas apiladas—
+ * y en el de precio es deliberado: un eje recortado al rango 60-94 haría ver la caída del
+ * poder de compra mucho más dramática de lo que es. */
+function marcoBase(id, vmax, dec){
+  const svg = $(id), c = svg.getBoundingClientRect();
+  const W = Math.max(260, c.width|0), H = Math.max(120, c.height|0);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const {paso, tope} = escalaBase(vmax);
+  const ml = 44, mr = 8, mt = 10, mb = 18;
+  const alto = H - mt - mb;
+  const y = v => mt + alto - alto * (v / tope);
+  let s = '';
+  for(let v = 0; v <= tope + 1e-9; v += paso){
+    const yy = y(v);
+    s += `<line x1="${ml}" y1="${yy}" x2="${W-mr}" y2="${yy}" stroke="var(--ln)" `
+       + `stroke-width="1"/>`
+       + `<text x="${ml-7}" y="${yy}" fill="var(--tx-2)" font-size="10.5" text-anchor="end" `
+       + `dominant-baseline="middle">${fmt(v, dec)}</text>`;
+  }
+  return {svg, W, H, ml, mr, mt, mb, y, s,
+          x: (i, n) => ml + (W - ml - mr) * i / (n - 1)};
+}
+
+function ejeAnios(m, d){
+  const n = d.length;
+  return [0, Math.floor(n/2), n-1].map(i =>
+    `<text x="${m.x(i, n)}" y="${m.H-5}" fill="var(--tx-2)" font-size="10.5" text-anchor="${
+      i === 0 ? 'start' : (i === n-1 ? 'end' : 'middle')}">${d[i].y}</text>`).join('');
+}
+
+function chBasePrecio(d){
+  const m = marcoBase('chBasePrecio', Math.max(...d.map(a => a.sinR)), 0);
+  const pts = d.map((a,i) => `${m.x(i, d.length).toFixed(1)},${m.y(a.sinR).toFixed(1)}`);
+  m.svg.innerHTML = m.s
+    + `<polyline fill="none" stroke="var(--sin)" stroke-width="2.4" points="${pts.join(' ')}"/>`
+    + ejeAnios(m, d);
+}
+
+/* Bandas APILADAS y no superpuestas: dos translúcidos encima dan un tercer tono que no está
+ * en la leyenda. Cada una lleva el trazo de su propio borde superior, que es lo que deja ver
+ * dónde termina una y empieza la otra. */
+function chBaseEnergia(d){
+  const n = d.length;
+  /* En miles de GWh/año: con cinco dígitos las marcas no caben en el margen izquierdo de
+   * un teléfono, y la unidad va dicha en la glosa de la tarjeta. */
+  const mx = Math.max(...d.map(a => Math.max(a.dem, a.eBase + a.eNuevo))) / 1000;
+  const m = marcoBase('chBaseEnergia', mx, 0);
+  const mil = v => v / 1000;
+  const banda = (sup, inf, col) => {
+    const a = d.map((q,i) => `${m.x(i,n).toFixed(1)},${m.y(mil(sup(q))).toFixed(1)}`);
+    const b = d.map((q,i) => `${m.x(i,n).toFixed(1)},${m.y(mil(inf(q))).toFixed(1)}`).reverse();
+    return `<polygon points="${a.concat(b).join(' ')}" fill="${col}" opacity=".5"/>`
+         + `<polyline fill="none" stroke="${col}" stroke-width="1.4" points="${a.join(' ')}"/>`;
+  };
+  m.svg.innerHTML = m.s
+    + banda(q => q.eBase, () => 0, 'var(--teal-l)')
+    + banda(q => q.eBase + q.eNuevo, q => q.eBase, 'var(--steel)')
+    + `<polyline fill="none" stroke="var(--gold)" stroke-width="2" stroke-dasharray="5 4" `
+    + `points="${d.map((q,i) => `${m.x(i,n).toFixed(1)},${m.y(mil(q.dem)).toFixed(1)}`).join(' ')}"/>`
+    + ejeAnios(m, d);
+}
+
 /* Al volver NO se reinicia nada: los tres grupos quedan abiertos con lo elegido, para poder
  * cambiar una cosa y volver a simular. El revelado es para la primera vez, no una jaula. */
 function volver(){
   $('sub').textContent = 'Contratos de suministro regulado · SEN';
   $('paso2').hidden = true;
+  $('paso3').hidden = true;
   $('paso1').hidden = false;
   marcar();
   window.scrollTo(0,0);
 }
 $('simular').addEventListener('click', simular);
 $('volver').addEventListener('click', volver);
-addEventListener('resize', () => { if(!$('paso2').hidden && ULTIMO) chAnual(ULTIMO.r); });
+$('volverBase').addEventListener('click', volver);
+addEventListener('resize', () => { if(!$('paso2').hidden && ULTIMO) chAnual(ULTIMO.r);
+                                   if(!$('paso3').hidden) chBase(); });
 
 /* ============================================================
    Registro
