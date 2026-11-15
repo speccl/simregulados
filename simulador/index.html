@@ -630,6 +630,17 @@ select{
 
   <div class="kpis" id="kpis"></div>
 
+  <!-- La llamada al informe va ACÁ y no al final. Al final caía en y=767 de una pantalla de
+       852: entraba por 33 px, y sólo mientras `#nota` estuviera vacía — con un aviso (plazo
+       cero, contratos inviables, «la cuenta sube») o en un teléfono con la barra del
+       navegador se iba abajo del pliegue y el informe no se pedía. Acá el número ya se vio
+       —titular e indicadores— así que la puerta sigue estando después del resultado, que es
+       lo que la hace razonable; el gráfico y las notas son el detalle. -->
+  <button class="btn" id="pedirPdf" style="margin-bottom:20px">
+    <svg viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
+    Descargar el informe
+  </button>
+
   <div class="tarjeta sup">
     <h3>Efecto año a año</h3>
     <p class="gl">Diferencia de costo de abastecer la misma demanda, en millones de dólares
@@ -642,11 +653,6 @@ select{
   </div>
 
   <div id="nota"></div>
-
-  <button class="btn" id="pedirPdf">
-    <svg viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
-    Descargar el informe
-  </button>
 
   <button class="btn sec" id="volver" style="margin-top:10px">Cambiar la simulación</button>
 
