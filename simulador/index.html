@@ -186,6 +186,38 @@ select{
   font-weight:400;font-size:14px;min-height:44px}
 .btn.sec:hover{background:var(--app-2)}
 
+/* Un botón de dos líneas. «Descargar el informe» nombra un formato y no promete nada —y
+   nadie quiere un PDF—; la segunda línea es la que dice qué se gana por apretarlo. */
+.btn.dos{line-height:1.2;padding:11px 18px;align-items:center}
+.btn.dos > span{display:block;text-align:left}
+.btn.dos small{display:block;font-size:11.5px;font-weight:400;letter-spacing:0;
+  opacity:.74;margin-top:2px}
+
+/* ------------------------- la oferta del informe -------------------------
+   Va después del gráfico, que es donde la persona acaba de ver el rojo, y es el único
+   bloque de la pantalla con filete dorado: acá es donde se decide. La miniatura de las
+   cuatro páginas hace la mitad del trabajo — enseña el objeto en vez de nombrarlo. */
+.oferta{margin:22px 0 0;padding:16px 15px 15px;background:var(--app-2);
+  border:1px solid var(--ln);border-top:2px solid var(--gold);border-radius:var(--r-s)}
+.oferta h3{margin:0 0 7px;font-size:16px;font-weight:700;color:var(--pale);
+  letter-spacing:-.012em;line-height:1.25}
+.oferta > p{margin:0 0 13px;font-size:13.5px;line-height:1.5;color:var(--tx)}
+.oferta b{color:var(--pale);font-weight:700}
+.oferta ul{margin:0 0 14px;padding:0;list-style:none}
+.oferta li{position:relative;padding-left:15px;margin-bottom:8px;font-size:12.5px;
+  line-height:1.45;color:var(--tx-2)}
+.oferta li:last-child{margin-bottom:0}
+.oferta li::before{content:"";position:absolute;left:0;top:6px;width:6px;height:6px;
+  border-radius:50%;background:var(--teal-l)}
+.oferta li b{color:var(--tx)}
+/* width/height van también como atributos: reservan la caja antes de que la imagen llegue,
+   y sin eso la tarjeta da un salto justo cuando se está leyendo. */
+.oferta img{display:block;width:100%;height:auto;margin:14px 0;border-radius:3px}
+.oferta .al{margin:10px 0 0;font-size:11.5px;color:var(--tx-2);text-align:center;
+  line-height:1.4}
+.campo > label .opc{font-weight:400;font-size:10px;color:var(--tx-2);letter-spacing:0;
+  text-transform:none}
+
 /* ============================ resultado ============================ */
 /* El titular del resultado. Lo que alguien lee en voz alta o pega en un mensaje es una
    frase con el número adentro, y eso es lo primero que tiene que haber en la pantalla. */
@@ -588,7 +620,7 @@ select{
   <!-- La versión de la compilación. GitHub Pages cachea el HTML unos diez minutos, así que
        sin esto no hay forma de saber de un vistazo si lo que está en pantalla es lo último
        publicado o una copia vieja del navegador. Costó una prueba confusa. -->
-  <p class="versionPie">16-11-2026 10:55</p>
+  <p class="versionPie">16-11-2026 12:29</p>
 </section>
 
 <!-- ============== el escenario base: el contrafactual ==============
@@ -651,9 +683,10 @@ select{
        navegador se iba abajo del pliegue y el informe no se pedía. Acá el número ya se vio
        —titular e indicadores— así que la puerta sigue estando después del resultado, que es
        lo que la hace razonable; el gráfico y las notas son el detalle. -->
-  <button class="btn" id="pedirPdf" style="margin-bottom:20px">
+  <button class="btn dos" id="pedirPdf" style="margin-bottom:20px">
     <svg viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
-    Descargar el informe
+    <span>Ver el informe completo
+      <small id="pedirPdfSub">4 páginas</small></span>
   </button>
 
   <div class="tarjeta sup">
@@ -668,6 +701,31 @@ select{
   </div>
 
   <div id="nota"></div>
+
+  <!-- La oferta larga va acá, DESPUÉS del gráfico, y el botón corto arriba. Son dos
+       trabajos distintos: arriba, para quien ya lo quiere; acá, para quien necesita saber
+       qué es. Con un solo botón arriba y la palabra «informe» como toda promesa no lo
+       pinchaba nadie — probado con gente de verdad. Lo que abre el apetito es el rojo del
+       gráfico que acaba de ver: esta pantalla dice cuánto BAJA la cuenta y no dice cuánto
+       cuesta, que es la otra mitad de la operación (regla 9 de CLAUDE.md). -->
+  <div class="oferta" id="oferta">
+    <h3>Lo que esta pantalla no te dice</h3>
+    <p id="ofertaTxt"></p>
+    <ul>
+      <li><b>Lo que cuesta</b> — la cadena rebaja → extensión → saldo, y cómo cambia si el
+        cliente descuenta al 5,5%, 10% o 15%.</li>
+      <li><b>De dónde sale la energía</b> — año a año, con las licitaciones que la
+        extensión desplaza.</li>
+      <li><b>El método completo</b> — los cinco pasos del modelo y la tabla de supuestos.</li>
+    </ul>
+    <img src="informe-vista.png" alt="Las cuatro páginas del informe" loading="lazy"
+         width="1274" height="444">
+    <button class="btn" id="pedirPdf2">
+      <svg viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
+      Quiero el informe
+    </button>
+    <p class="al">Se abre acá mismo y te llega al correo, para que lo tengas después.</p>
+  </div>
 
   <button class="btn sec" id="volver" style="margin-top:10px">Cambiar la simulación</button>
 
@@ -720,8 +778,9 @@ select{
   <div class="hoja" role="dialog" aria-modal="true" aria-labelledby="regTit">
 
     <div id="regForm">
-      <h2 id="regTit">Su informe está listo</h2>
-      <p class="bajada">Déjenos sus datos y se lo descargamos al instante. También se lo mandamos por correo.</p>
+      <h2 id="regTit">Tu informe está listo</h2>
+      <p class="bajada">Lo abrimos al tiro y además te llega al correo, para que lo tengas
+        después y lo puedas reenviar.</p>
 
       <div class="campo">
         <label for="nombre">Nombre</label>
@@ -730,9 +789,9 @@ select{
         <p class="err" id="errNombre"></p>
       </div>
       <div class="campo">
-        <label for="empresa">Empresa</label>
+        <label for="empresa">Empresa <span class="opc">(opcional)</span></label>
         <input type="text" id="empresa" autocomplete="off" autocapitalize="words"
-               placeholder="Dónde trabaja" enterkeyhint="next">
+               placeholder="Dónde trabajas" enterkeyhint="next">
         <p class="err" id="errEmpresa"></p>
       </div>
       <div class="campo">
@@ -748,12 +807,12 @@ select{
         <span>Quiero recibir los análisis de SPEC sobre la Ley 21.833 y el mercado eléctrico.</span>
       </label>
 
-      <button class="btn" id="enviar">Descargar el informe</button>
+      <button class="btn" id="enviar">Abrir el informe</button>
       <button class="btn sec" id="cancelar" style="margin-top:10px">Ahora no</button>
 
-      <p class="legal">SPEC usa estos datos para entregarle el informe y, si lo autoriza,
-        para enviarle sus análisis. No se comparten con terceros. Puede pedir su eliminación
-        escribiendo a contacto@spec.cl.</p>
+      <p class="legal">SPEC usa estos datos para entregarte el informe y, si lo autorizas,
+        para mandarte sus análisis. No se comparten con terceros. Puedes pedir que los
+        borremos escribiendo a contacto@spec.cl.</p>
     </div>
 
     <div id="regListo" class="listo" hidden>
@@ -3649,11 +3708,12 @@ function simular(){
   if(SEL.lic == null || SEL.precio == null || SEL.plazo == null) return;
   const sel = {...SEL};
   const k = cfg(sel), r = evaluar(DATA, k), t = tarifa(k, r);
-  ULTIMO = {sel, k, r, t};
+  ULTIMO = {sel, k, r, t, id: uid()};
   pintar(ULTIMO);
   $('paso1').hidden = true;
   $('paso2').hidden = false;
   window.scrollTo(0,0);
+  anotarSimulacion();          // la fila se abre acá, no al registrarse
 }
 
 function pintar({sel, k, r, t}){
@@ -3669,6 +3729,23 @@ function pintar({sel, k, r, t}){
   /* Y la dirección en la cabecera, que es lo único que queda dentro de CUALQUIER captura
    * de esta pantalla: la cabecera es lo que se queda arriba al desplazarse. */
   if(URL_SIM) $('sub').textContent = URL_SIM;
+
+  /* La oferta del informe se escribe con el resultado que la persona tiene al frente. Un
+   * «cuánto cuesta esta rebaja» delante de un cero, o delante de una cuenta que sube, se
+   * lee como que el texto estaba puesto de antes y nadie miró — que es exactamente lo que
+   * hace que no se pinche. Son tres casos y los tres están en pantalla. */
+  $('pedirPdfSub').textContent = '4 páginas · ' + (nd
+    ? 'por qué este bloque da cero'
+    : sb ? 'por qué acá la cuenta sube'
+         : 'cuánto cuesta esta rebaja');
+  $('ofertaTxt').innerHTML = nd
+    ? `Acá ves que este bloque <b>no tiene nada que rebajar</b> a este precio. El informe
+       dice desde qué precio empieza a morder, y qué pasa cuando lo hace.`
+    : sb
+      ? `Acá ves que la cuenta <b>sube</b>. El informe explica por qué pasa eso en este
+         bloque, y cuánto es el saldo completo en valor presente.`
+      : `Acá ves cuánto <b>baja</b> la cuenta. Lo que no ves es cuánto cuesta pagarla: ese
+         rojo sumado, en valor presente y a la tasa con que tú descuentes.`;
   $('eleccion').innerHTML =
       `<span class="tres"><b>${l.lic}</b><span class="mas">+</span>`
     + `<b>${sel.precio} USD/MWh</b><span class="mas">+</span>`
@@ -4036,14 +4113,27 @@ async function vaciarCola(forzar){
 
 const uid = () => (Date.now().toString(36) + Math.random().toString(36).slice(2,10));
 
-function registro(datos){
-  const {sel, r, t} = ULTIMO;
+/* El identificador del dispositivo, para poder agrupar las simulaciones de una misma
+ * persona en la planilla. No identifica a nadie: es un número al azar que vive en este
+ * teléfono y que no sale de acá salvo en estas filas. Sin localStorage —origen file://,
+ * navegación privada— se genera uno por carga, que es lo honesto: no hay memoria. */
+const SESION = (() => {
+  try{
+    let v = localStorage.getItem('spec_sesion');
+    if(!v){ v = uid(); localStorage.setItem('spec_sesion', v); }
+    return v;
+  }catch(_){ return uid(); }
+})();
+
+/* La parte de la fila que existe apenas hay un resultado en pantalla: la elección, lo que
+ * se le mostró, y nada de identidad. */
+function anotacion(){
+  const {sel, r, t, id} = ULTIMO;
   return {
-    id: uid(),
+    id,
+    sesion: SESION,
     fecha: new Date().toISOString(),
     fechaLocal: new Date().toLocaleString('es-CL', {timeZone:'America/Santiago'}),
-    nombre: datos.nombre, empresa: datos.empresa, correo: datos.correo,
-    consiente: datos.consiente,
     // la elección
     licitacion: sel.lic, precioObjetivo: sel.precio, extension: sel.plazo,
     // y el resultado que vio, para que la planilla diga qué se le mostró
@@ -4054,6 +4144,39 @@ function registro(datos){
     informe: baseInforme(sel),
     origen: location.href.split('?')[0],
     agente: navigator.userAgent
+  };
+}
+
+/* Abre la fila al mostrar el resultado.
+ *
+ * La mayoría de la gente simula y no pide el informe, y ésa es justo la información que
+ * antes no llegaba a ninguna parte: la planilla sólo veía a quien completaba el embudo.
+ * Acá no va ni un dato personal —la identidad llega después, si llega— así que no hay
+ * nada que consentir todavía.
+ *
+ * No se espera la respuesta: el resultado ya está en pantalla y la persona está leyéndolo.
+ * Si falla queda en la cola y se reintenta como cualquier otro registro. */
+function anotarSimulacion(){
+  if(!ENDPOINT || !ULTIMO || ULTIMO.anotada) return;
+  ULTIMO.anotada = true;
+  const reg = anotacion();
+  encolar(reg);
+  postear(reg).then(r => { if(r) desencolar(reg.id); });
+}
+
+/* Y la completa cuando además deja sus datos. Lleva `reemplaza` con el id de la fila que
+ * abrió la simulación: el Apps Script busca esa fila y le escribe encima los campos que
+ * vienen con valor, en vez de agregar otra. Si corriera contra una implementación vieja
+ * del script —que no sabe de `reemplaza`— esto escribe su propia fila completa, que es el
+ * comportamiento de siempre: se pierde la fusión, no el lead. */
+function registro(datos){
+  const a = anotacion();
+  return {...a,
+    id: uid(),
+    reemplaza: a.id,
+    fechaInforme: new Date().toLocaleString('es-CL', {timeZone:'America/Santiago'}),
+    nombre: datos.nombre, empresa: datos.empresa, correo: datos.correo,
+    consiente: datos.consiente
   };
 }
 
@@ -4092,6 +4215,7 @@ function cerrarRegistro(){
   document.body.style.overflow = '';
 }
 $('pedirPdf').addEventListener('click', abrirRegistro);
+$('pedirPdf2').addEventListener('click', abrirRegistro);
 $('cancelar').addEventListener('click', cerrarRegistro);
 $('cerrarListo').addEventListener('click', cerrarRegistro);
 $('velo').addEventListener('click', e => { if(e.target === $('velo')) cerrarRegistro(); });
@@ -4106,10 +4230,12 @@ function valida(){
     correo: $('correo').value.trim(),
     consiente: $('consiente').checked
   };
+  /* La empresa dejó de ser obligatoria. Un campo más es un motivo más para cerrar la hoja
+   * estando de pie en un evento, y el dato lo pone igual quien lo quiere poner; lo que no
+   * se puede perder es el correo. */
   const malos = [
-    ['nombre',  !v.nombre,                  'Falta su nombre.'],
-    ['empresa', !v.empresa,                 'Falta la empresa.'],
-    ['correo',  !CORREO_OK.test(v.correo),  'Revise el correo.']
+    ['nombre',  !v.nombre,                  'Falta tu nombre.'],
+    ['correo',  !CORREO_OK.test(v.correo),  'Revisa el correo.']
   ];
   let ok = true;
   for(const [campo, mal, msj] of malos){
@@ -4124,6 +4250,11 @@ $('enviar').addEventListener('click', async () => {
   const datos = valida();
   if(!datos) return;
   const reg = registro(datos);
+  /* La fila de la simulación, si quedó pendiente de enviar, ya no hace falta: ésta trae
+   * todos sus campos y además la identidad. Dejarla en la cola la reenviaría después del
+   * registro, sin ningún efecto —el script fusiona y no pisa lo que ya está— pero gastando
+   * un viaje y dejando un pendiente que confunde en la consola del operador. */
+  desencolar(reg.reemplaza);
   encolar(reg);                       // primero la red de seguridad, después la red
   $('enviar').disabled = true;
   $('enviar').textContent = 'Enviando…';
@@ -4156,13 +4287,13 @@ $('enviar').addEventListener('click', async () => {
 
   $('splash').hidden = true;
   $('enviar').disabled = false;
-  $('enviar').textContent = 'Descargar el informe';
+  $('enviar').textContent = 'Abrir el informe';
   $('regForm').hidden = true;
   $('regListo').hidden = false;
   $('descargar').hidden = true;
   $('listoTxt').innerHTML = `Quedó registrado el escenario de <b>${ULTIMO.sel.lic}</b> a
-    ${ULTIMO.sel.precio} USD/MWh. No pudimos preparar el informe en este momento; se lo
-    enviamos a su correo.`;
+    ${ULTIMO.sel.precio} USD/MWh. No pudimos preparar el informe en este momento; te lo
+    mandamos al correo.`;
 });
 
 /* El informe se ABRE en el navegador, no se baja como archivo: en el teléfono el visor de
