@@ -197,23 +197,23 @@ select{
    Va después del gráfico, que es donde la persona acaba de ver el rojo, y es el único
    bloque de la pantalla con filete dorado: acá es donde se decide. La miniatura de las
    cuatro páginas hace la mitad del trabajo — enseña el objeto en vez de nombrarlo. */
-.oferta{margin:22px 0 0;padding:16px 15px 15px;background:var(--app-2);
+.oferta{margin:0 0 20px;padding:14px 15px 13px;background:var(--app-2);
   border:1px solid var(--ln);border-top:2px solid var(--gold);border-radius:var(--r-s)}
-.oferta h3{margin:0 0 7px;font-size:16px;font-weight:700;color:var(--pale);
+.oferta h3{margin:0 0 6px;font-size:16px;font-weight:700;color:var(--pale);
   letter-spacing:-.012em;line-height:1.25}
-.oferta > p{margin:0 0 13px;font-size:13.5px;line-height:1.5;color:var(--tx)}
+.oferta > p{margin:0 0 11px;font-size:13px;line-height:1.47;color:var(--tx)}
 .oferta b{color:var(--pale);font-weight:700}
-.oferta ul{margin:0 0 14px;padding:0;list-style:none}
-.oferta li{position:relative;padding-left:15px;margin-bottom:8px;font-size:12.5px;
-  line-height:1.45;color:var(--tx-2)}
+.oferta ul{margin:0 0 12px;padding:0;list-style:none}
+.oferta li{position:relative;padding-left:15px;margin-bottom:5px;font-size:12px;
+  line-height:1.42;color:var(--tx-2)}
 .oferta li:last-child{margin-bottom:0}
 .oferta li::before{content:"";position:absolute;left:0;top:6px;width:6px;height:6px;
   border-radius:50%;background:var(--teal-l)}
 .oferta li b{color:var(--tx)}
 /* width/height van también como atributos: reservan la caja antes de que la imagen llegue,
    y sin eso la tarjeta da un salto justo cuando se está leyendo. */
-.oferta img{display:block;width:100%;height:auto;margin:14px 0;border-radius:3px}
-.oferta .al{margin:10px 0 0;font-size:11.5px;color:var(--tx-2);text-align:center;
+.oferta img{display:block;width:100%;height:auto;margin:9px 0;border-radius:3px}
+.oferta .al{margin:8px 0 0;font-size:11.5px;color:var(--tx-2);text-align:center;
   line-height:1.4}
 .campo > label .opc{font-weight:400;font-size:10px;color:var(--tx-2);letter-spacing:0;
   text-transform:none}
@@ -620,7 +620,7 @@ select{
   <!-- La versión de la compilación. GitHub Pages cachea el HTML unos diez minutos, así que
        sin esto no hay forma de saber de un vistazo si lo que está en pantalla es lo último
        publicado o una copia vieja del navegador. Costó una prueba confusa. -->
-  <p class="versionPie">16-11-2026 12:29</p>
+  <p class="versionPie">16-11-2026 12:40</p>
 </section>
 
 <!-- ============== el escenario base: el contrafactual ==============
@@ -677,17 +677,37 @@ select{
 
   <div class="kpis" id="kpis"></div>
 
-  <!-- La llamada al informe va ACÁ y no al final. Al final caía en y=767 de una pantalla de
-       852: entraba por 33 px, y sólo mientras `#nota` estuviera vacía — con un aviso (plazo
-       cero, contratos inviables, «la cuenta sube») o en un teléfono con la barra del
-       navegador se iba abajo del pliegue y el informe no se pedía. Acá el número ya se vio
-       —titular e indicadores— así que la puerta sigue estando después del resultado, que es
-       lo que la hace razonable; el gráfico y las notas son el detalle. -->
-  <button class="btn dos" id="pedirPdf" style="margin-bottom:20px">
-    <svg viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
-    <span>Ver el informe completo
-      <small id="pedirPdfSub">4 páginas</small></span>
-  </button>
+  <!-- La oferta va ACÁ, entre los indicadores y el gráfico, y es lo único que pide el
+       informe: no hay un botón suelto en ninguna otra parte.
+
+       Antes era un botón dorado que decía «Descargar el informe» y no lo pinchaba nadie
+       —probado con gente de verdad—: «informe» nombra un formato y no promete nada, y la
+       pantalla de arriba ya parece completa. Lo que se ofrece ahora es la pregunta que
+       esta pantalla deja abierta —cuánto cuesta la rebaja, que es la otra mitad de la
+       operación, regla 9 de CLAUDE.md— y las cuatro páginas a la vista.
+
+       Y va arriba del gráfico porque abajo se perdía: al final de la pantalla caía en
+       y=767 de 852, o sea entraba por 33 px y sólo mientras `#nota` estuviera vacía. -->
+  <div class="oferta" id="oferta">
+    <h3>Lo que esta pantalla no te dice</h3>
+    <p id="ofertaTxt"></p>
+    <ul>
+      <li><b>Lo que cuesta</b> — la cadena rebaja → extensión → saldo, y cómo cambia si el
+        cliente descuenta al 5,5%, 10% o 15%.</li>
+      <li><b>De dónde sale la energía</b> — año a año, con las licitaciones que la
+        extensión desplaza.</li>
+      <li><b>El método completo</b> — los cinco pasos del modelo y la tabla de supuestos.</li>
+    </ul>
+    <img src="informe-vista.png" alt="Las cuatro páginas del informe" loading="lazy"
+         width="1274" height="444">
+    <button class="btn" id="pedirPdf">
+      <svg viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
+      Quiero el informe
+    </button>
+    <p class="al">Se abre acá mismo y te llega al correo, para que lo tengas después.</p>
+  </div>
+
+
 
   <div class="tarjeta sup">
     <h3>Efecto año a año</h3>
@@ -701,31 +721,6 @@ select{
   </div>
 
   <div id="nota"></div>
-
-  <!-- La oferta larga va acá, DESPUÉS del gráfico, y el botón corto arriba. Son dos
-       trabajos distintos: arriba, para quien ya lo quiere; acá, para quien necesita saber
-       qué es. Con un solo botón arriba y la palabra «informe» como toda promesa no lo
-       pinchaba nadie — probado con gente de verdad. Lo que abre el apetito es el rojo del
-       gráfico que acaba de ver: esta pantalla dice cuánto BAJA la cuenta y no dice cuánto
-       cuesta, que es la otra mitad de la operación (regla 9 de CLAUDE.md). -->
-  <div class="oferta" id="oferta">
-    <h3>Lo que esta pantalla no te dice</h3>
-    <p id="ofertaTxt"></p>
-    <ul>
-      <li><b>Lo que cuesta</b> — la cadena rebaja → extensión → saldo, y cómo cambia si el
-        cliente descuenta al 5,5%, 10% o 15%.</li>
-      <li><b>De dónde sale la energía</b> — año a año, con las licitaciones que la
-        extensión desplaza.</li>
-      <li><b>El método completo</b> — los cinco pasos del modelo y la tabla de supuestos.</li>
-    </ul>
-    <img src="informe-vista.png" alt="Las cuatro páginas del informe" loading="lazy"
-         width="1274" height="444">
-    <button class="btn" id="pedirPdf2">
-      <svg viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
-      Quiero el informe
-    </button>
-    <p class="al">Se abre acá mismo y te llega al correo, para que lo tengas después.</p>
-  </div>
 
   <button class="btn sec" id="volver" style="margin-top:10px">Cambiar la simulación</button>
 
@@ -3734,18 +3729,14 @@ function pintar({sel, k, r, t}){
    * «cuánto cuesta esta rebaja» delante de un cero, o delante de una cuenta que sube, se
    * lee como que el texto estaba puesto de antes y nadie miró — que es exactamente lo que
    * hace que no se pinche. Son tres casos y los tres están en pantalla. */
-  $('pedirPdfSub').textContent = '4 páginas · ' + (nd
-    ? 'por qué este bloque da cero'
-    : sb ? 'por qué acá la cuenta sube'
-         : 'cuánto cuesta esta rebaja');
   $('ofertaTxt').innerHTML = nd
     ? `Acá ves que este bloque <b>no tiene nada que rebajar</b> a este precio. El informe
-       dice desde qué precio empieza a morder, y qué pasa cuando lo hace.`
+       dice desde qué precio empieza a morder.`
     : sb
-      ? `Acá ves que la cuenta <b>sube</b>. El informe explica por qué pasa eso en este
-         bloque, y cuánto es el saldo completo en valor presente.`
-      : `Acá ves cuánto <b>baja</b> la cuenta. Lo que no ves es cuánto cuesta pagarla: ese
-         rojo sumado, en valor presente y a la tasa con que tú descuentes.`;
+      ? `Acá ves que la cuenta <b>sube</b>. El informe explica por qué pasa en este
+         bloque, y cuánto es el saldo completo.`
+      : `Acá ves cuánto <b>baja</b> la cuenta. Lo que no ves es cuánto cuesta pagarla: el
+         sobrecosto de los años que vienen, a la tasa con que tú descuentes.`;
   $('eleccion').innerHTML =
       `<span class="tres"><b>${l.lic}</b><span class="mas">+</span>`
     + `<b>${sel.precio} USD/MWh</b><span class="mas">+</span>`
@@ -4215,7 +4206,6 @@ function cerrarRegistro(){
   document.body.style.overflow = '';
 }
 $('pedirPdf').addEventListener('click', abrirRegistro);
-$('pedirPdf2').addEventListener('click', abrirRegistro);
 $('cancelar').addEventListener('click', cerrarRegistro);
 $('cerrarListo').addEventListener('click', cerrarRegistro);
 $('velo').addEventListener('click', e => { if(e.target === $('velo')) cerrarRegistro(); });
