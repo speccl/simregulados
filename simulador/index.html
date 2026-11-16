@@ -4107,25 +4107,42 @@ $('enviar').addEventListener('click', async () => {
   encolar(reg);                       // primero la red de seguridad, después la red
   $('enviar').disabled = true;
   $('enviar').textContent = 'Enviando…';
+
+  /* La lámina cubre TODA la espera, no sólo el tramo final. El registro ahora manda además
+   * el correo con el informe adjunto, así que la respuesta tarda unos segundos; antes el
+   * usuario esperaba eso mirando un botón apagado y DESPUÉS veía los cuatro segundos de la
+   * lámina, uno detrás del otro. Levantándola acá, la espera total es la mayor de las dos
+   * y no su suma. */
+  const desde = Date.now();
+  if(PDF_BASE) mostrarSplash();
+
   /* La respuesta trae el token con que se arma el nombre del informe. Sin ella no hay
    * informe que abrir: es el precio de que los 252 archivos no se puedan enumerar. */
   const r = await postear(reg);
   if(r) desencolar(reg.id);
   ULTIMO.token = r && r.token ? r.token : null;
+  vaciarCola();
 
+  const archivo = PDF_BASE ? nombreInforme(ULTIMO.sel, ULTIMO.token) : null;
+
+  /* El informe se abre solo. Registrarse YA fue el gesto: pedir un clic más es pedir dos
+   * veces lo mismo, y es un clic en el que se pierde gente. El botón sigue existiendo para
+   * el camino de vuelta, cuando no hay informe que abrir. */
+  if(archivo){
+    descargable();
+    verInforme(MS_SPLASH - (Date.now() - desde));
+    return;
+  }
+
+  $('splash').hidden = true;
   $('enviar').disabled = false;
   $('enviar').textContent = 'Descargar el informe';
   $('regForm').hidden = true;
   $('regListo').hidden = false;
-
-  const archivo = PDF_BASE ? nombreInforme(ULTIMO.sel, ULTIMO.token) : null;
-  $('descargar').hidden = !archivo;
-  $('listoTxt').innerHTML = archivo
-    ? `Le preparamos el informe de <b>${ULTIMO.sel.lic}</b> a ${ULTIMO.sel.precio} USD/MWh.`
-    : `Quedó registrado el escenario de <b>${ULTIMO.sel.lic}</b> a ${ULTIMO.sel.precio}
-       USD/MWh. No pudimos preparar el informe en este momento; se lo enviamos a su correo.`;
-  descargable();
-  vaciarCola();
+  $('descargar').hidden = true;
+  $('listoTxt').innerHTML = `Quedó registrado el escenario de <b>${ULTIMO.sel.lic}</b> a
+    ${ULTIMO.sel.precio} USD/MWh. No pudimos preparar el informe en este momento; se lo
+    enviamos a su correo.`;
 });
 
 /* El informe se ABRE en el navegador, no se baja como archivo: en el teléfono el visor de
@@ -4137,21 +4154,34 @@ $('enviar').addEventListener('click', async () => {
  * bloquearía el navegador. */
 const MS_SPLASH = 4000;
 
-function verInforme(){
+/* Idempotente: la lámina se levanta al enviar el registro y `verInforme` la vuelve a pedir
+ * después. Volver a escribir la variable reiniciaría la barra de progreso a la mitad. */
+function mostrarSplash(){
+  if(!$('splash').hidden) return;
+  $('splash').style.setProperty('--splash', MS_SPLASH + 'ms');
+  $('splash').hidden = false;
+}
+
+function verInforme(espera = MS_SPLASH){
   const archivo = nombreInforme(ULTIMO.sel, ULTIMO.token);
   if(!archivo) return;
   const url = PDF_BASE + archivo;
   // se pide el PDF ya, durante la lámina, para que al navegar esté en caché
   try{ fetch(url, {cache:'force-cache'}).catch(()=>{}); }catch(_){}
-  $('splash').style.setProperty('--splash', MS_SPLASH + 'ms');
-  $('splash').hidden = false;
+  mostrarSplash();
   cerrarRegistro();
-  setTimeout(() => location.assign(url), MS_SPLASH);
+  const falta = Math.max(0, espera);
+  setTimeout(() => location.assign(url), falta);
+  /* Red de seguridad: si la navegación no ocurre —pasa en algunos navegadores embebidos que
+   * no abren PDF— se recupera el panel en vez de dejar la lámina colgada para siempre. */
+  setTimeout(() => { $('splash').hidden = true; }, falta + 2500);
 }
 
 function descargable(){
   if(!PDF_BASE || !nombreInforme(ULTIMO.sel, ULTIMO.token)) return;
-  $('descargar').onclick = verInforme;
+  // El `()=>` importa: `onclick = verInforme` le pasaría el evento como `espera`, y
+  // Math.max(0, MouseEvent) es NaN, que en setTimeout dispara de inmediato.
+  $('descargar').onclick = () => verInforme();
 }
 
 /* ============================================================
