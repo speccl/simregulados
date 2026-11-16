@@ -255,6 +255,8 @@ select{
 .marcaPie span{font-size:9.5px;color:var(--tx-2);letter-spacing:.04em}
 .marcaPie a{display:inline-flex;align-items:center}
 .marcaPie a:hover img{opacity:1}
+.versionPie{margin:0;font-size:9.5px;color:var(--tx-3,var(--tx-2));opacity:.55;
+  letter-spacing:.04em;font-variant-numeric:tabular-nums}
 .pieapp a{color:var(--teal-l)}
 .pieapp b{color:var(--steel);font-weight:700}
 
@@ -413,6 +415,15 @@ select{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.9 0 0 0 -0.42'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size:300px 300px}
 @media(prefers-reduced-motion:reduce){ .grano{opacity:.3} }
+
+.intro-marca{position:absolute;top:0;left:0;z-index:4;display:flex;align-items:center;
+  gap:10px;flex-wrap:wrap;padding:22px max(22px,env(safe-area-inset-left));
+  animation:splashEntra .9s var(--ease) .15s both}
+.intro-marca img{width:auto;opacity:.92}
+.intro-marca .spec{height:26px}
+.intro-marca .gal{height:16px}
+.intro-marca span{font-size:10px;color:var(--tx-2);letter-spacing:.05em}
+@media(min-width:640px){ .intro-marca{padding:30px 40px} }
 
 .intro-in{position:absolute;inset:auto 0 0;z-index:4;padding:26px 22px max(26px,env(safe-area-inset-bottom));
   display:flex;flex-direction:column;gap:20px;
@@ -574,6 +585,10 @@ select{
     <button class="verIntro" id="verIntro" type="button">¿Qué es esto?</button>
   </p>
   <div class="marcaPie" id="marcaPie"></div>
+  <!-- La versión de la compilación. GitHub Pages cachea el HTML unos diez minutos, así que
+       sin esto no hay forma de saber de un vistazo si lo que está en pantalla es lo último
+       publicado o una copia vieja del navegador. Costó una prueba confusa. -->
+  <p class="versionPie">16-11-2026 10:55</p>
 </section>
 
 <!-- ============== el escenario base: el contrafactual ==============
@@ -674,6 +689,9 @@ select{
   <div class="hito" aria-hidden="true"><span>+8 años</span></div>
   <div class="malla" aria-hidden="true"></div>
   <div class="grano" aria-hidden="true"></div>
+  <!-- La marca, arriba. El resto de la intro vive abajo (.intro-in), así que esto va suelto
+       y anclado al borde superior; el hito del plazo empieza en 24%, así que no se cruzan. -->
+  <div class="intro-marca" id="introLockup" aria-hidden="true"></div>
   <div class="intro-in">
     <h2>
       <span class="paso">Hoy la cuenta de la luz paga <b>contratos firmados hace años</b>.</span>
@@ -3335,10 +3353,12 @@ const MARCA_PIE =
   + `<a href="https://galilei.energy" target="_blank" rel="noopener">`
   +   `<img class="gal" src="${LOGOS.galileiBlanco.uri}" alt="Galilei"></a>`;
 document.querySelectorAll('.marcaPie').forEach(n => n.innerHTML = MARCA_PIE);
-$('splashLockup').innerHTML =
+const LOCKUP =
     `<img class="spec" src="${LOGOS.specBlanco.uri}" alt="SPEC">`
   + `<span>powered by</span>`
   + `<img class="gal" src="${LOGOS.galileiBlanco.uri}" alt="Galilei">`;
+$('splashLockup').innerHTML = LOCKUP;
+$('introLockup').innerHTML = LOCKUP;
 
 /* Los supuestos que no se negocian se dicen en el pie, leídos de DEF y no escritos a mano:
  * sin la app completa al lado, es lo único que cuenta bajo qué escenario sale el número. */
@@ -4341,7 +4361,7 @@ let introLimpiar = null, introTimer = null;
  * segunda vez la intro salía muda, con el lienzo corriendo y ni un texto. Quitarles la
  * animación, forzar un reflujo y devolvérsela es lo que las rearma. */
 function reiniciarAnimaciones(){
-  document.querySelectorAll('.intro .paso, .intro .hito, .intro .barraTpo i')
+  document.querySelectorAll('.intro .paso, .intro .hito, .intro .barraTpo i, .intro-marca')
     .forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
 }
 
